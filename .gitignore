@@ -1,0 +1,9 @@
+
+# Remove all hidden files except for gitgnore and workflow folder
+.*
+
+!.gitignore
+!.github/
+
+# Remove python caching
+__pycache__
