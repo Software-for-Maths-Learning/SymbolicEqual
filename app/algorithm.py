@@ -30,7 +30,7 @@ def grading_function(body: dict) -> dict:
             "error": {
                 "type": "SyntaxError",
                 "culprit": "user",
-                "description": "Unable to parse response from user",
+                "description": "SymPy was unable to parse your response",
                 "dump": repr(e),
             }
         }
@@ -42,7 +42,8 @@ def grading_function(body: dict) -> dict:
             "error": {
                 "type": "SyntaxError",
                 "culprit": "author",
-                "decription": "Unable to parse answer field - SHEET DATA NEEDS TO BE CHANGED",
+                "decription":
+                "Unable to parse answer field - SHEET DATA NEEDS TO BE CHANGED",
                 "dump": repr(e),
             }
         }
