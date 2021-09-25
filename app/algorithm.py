@@ -34,6 +34,15 @@ def grading_function(body: dict) -> dict:
                 "dump": repr(e),
             }
         }
+    except TypeError as e:
+        return {
+            "error": {
+                "type": "TypeError",
+                "culprit": "user",
+                "description": "SymPy was unable to parse your response",
+                "dump": repr(e),
+            }
+        }
 
     try:
         ans = parse_expr(body["answer"])
@@ -43,6 +52,16 @@ def grading_function(body: dict) -> dict:
                 "type": "SyntaxError",
                 "culprit": "author",
                 "decription":
+                "Unable to parse answer field - SHEET DATA NEEDS TO BE CHANGED",
+                "dump": repr(e),
+            }
+        }
+    except TypeError as e:
+        return {
+            "error": {
+                "type": "TypeError",
+                "culprit": "author",
+                "description":
                 "Unable to parse answer field - SHEET DATA NEEDS TO BE CHANGED",
                 "dump": repr(e),
             }
