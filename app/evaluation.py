@@ -1,8 +1,8 @@
-def grading_function(body: dict) -> dict:
+def evaluation_function(response, answer, params) -> dict:
     """
     Function used to grade a student response.
     ---
-    The handler function passes only one argument to grading_function(),
+    The handler function passes only one argument to evaluation_function(),
     which is a dictionary of the structure of the API request body
     deserialised from JSON.
 
@@ -15,7 +15,7 @@ def grading_function(body: dict) -> dict:
 
     The way you wish to structure you code (all in this function, or
     split into many) is entirely up to you. All that matters are the
-    return types and that grading_function() is the main function used
+    return types and that evaluation_function() is the main function used
     to output the grading response.
     """
 
@@ -24,48 +24,14 @@ def grading_function(body: dict) -> dict:
 
     # Safely try to parse answer and response into symbolic expressions
     try:
-        res = parse_expr(body["response"])
-    except SyntaxError as e:
-        return {
-            "error": {
-                "type": "SyntaxError",
-                "culprit": "user",
-                "description": "SymPy was unable to parse your response",
-                "dump": repr(e),
-            }
-        }
-    except TypeError as e:
-        return {
-            "error": {
-                "type": "TypeError",
-                "culprit": "user",
-                "description": "SymPy was unable to parse your response",
-                "dump": repr(e),
-            }
-        }
+        res = parse_expr(response)
+    except (SyntaxError, TypeError) as e:
+        raise Exception("SymPy was unable to parse the response") from e
 
     try:
-        ans = parse_expr(body["answer"])
-    except SyntaxError as e:
-        return {
-            "error": {
-                "type": "SyntaxError",
-                "culprit": "author",
-                "decription":
-                "Unable to parse answer field - SHEET DATA NEEDS TO BE CHANGED",
-                "dump": repr(e),
-            }
-        }
-    except TypeError as e:
-        return {
-            "error": {
-                "type": "TypeError",
-                "culprit": "author",
-                "description":
-                "Unable to parse answer field - SHEET DATA NEEDS TO BE CHANGED",
-                "dump": repr(e),
-            }
-        }
+        ans = parse_expr(answer)
+    except (SyntaxError, TypeError) as e:
+        raise Exception("SymPy was unable to parse the answer") from e
 
     # Add how res was interpreted to the response
     interp = {"response_latex": latex(res)}

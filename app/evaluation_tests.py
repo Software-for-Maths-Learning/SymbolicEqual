@@ -1,9 +1,9 @@
 import unittest
 
-from ..algorithm import grading_function
+from .evaluation import evaluation_function
 
 
-class TestGradingFunction(unittest.TestCase):
+class TestEvaluationFunction(unittest.TestCase):
     """
     TestCase Class used to test the algorithm.
     ---
@@ -18,51 +18,62 @@ class TestGradingFunction(unittest.TestCase):
     Read the docs on how to use unittest here:
     https://docs.python.org/3/library/unittest.html
 
-    Use grading_function() to check your algorithm works
+    Use evaluation_function() to check your algorithm works
     as it should.
     """
 
     def test_simple_polynomial_correct(self):
         body = {"response": "3*x**2 + 3*x +  5", "answer": "2+3+x+2*x + x*x*3"}
 
-        response = grading_function(body)
+        response = evaluation_function(body['response'], body['answer'], {})
 
         self.assertEqual(response.get("is_correct"), True)
 
     def test_simple_polynomial_incorrect(self):
-        body = {"response": "3*x**2 + 3*x +  5", "answer": "2+3+x+2*x + x*x*3 - x"}
+        body = {
+            "response": "3*x**2 + 3*x +  5",
+            "answer": "2+3+x+2*x + x*x*3 - x"
+        }
 
-        response = grading_function(body)
+        response = evaluation_function(body['response'], body['answer'], {})
 
         self.assertEqual(response.get("is_correct"), False)
 
     def test_simple_trig_correct(self):
         body = {"response": "cos(x)**2 + sin(x)**2 + y", "answer": "y + 1"}
 
-        response = grading_function(body)
+        response = evaluation_function(body['response'], body['answer'], {})
 
         self.assertEqual(response.get("is_correct"), True)
 
     def test_simple_trig_correct(self):
         body = {"response": "cos(x)**2 + sin(x)**2 + y", "answer": "y + 1"}
 
-        response = grading_function(body)
+        response = evaluation_function(body['response'], body['answer'], {})
 
         self.assertEqual(response.get("is_correct"), True)
 
     def test_invalid_user_expression(self):
         body = {"response": "3x", "answer": "3*x"}
 
-        response = grading_function(body)
-
-        self.assertEqual(response.get("error", {}).get("culprit"), "user")
+        self.assertRaises(
+            Exception,
+            evaluation_function,
+            body["response"],
+            body["answer"],
+            {},
+        )
 
     def test_invalid_author_expression(self):
         body = {"response": "3*x", "answer": "3x"}
 
-        response = grading_function(body)
-
-        self.assertEqual(response.get("error", {}).get("culprit"), "author")
+        self.assertRaises(
+            Exception,
+            evaluation_function,
+            body["response"],
+            body["answer"],
+            {},
+        )
 
 
 if __name__ == "__main__":

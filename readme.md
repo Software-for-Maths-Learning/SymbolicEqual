@@ -98,7 +98,7 @@ Begin by downloading the repository to your computer. This can be done either th
 git clone git@github.com:lambda-feedback/Grading-Script-Boilerplate.git
 ```
 
-Navigate into the repository folder and open `algorithm.py`. Inside is a boilerplate function called `grading_function()` which is called when a grading request is made.
+Navigate into the repository folder and open `algorithm.py`. Inside is a boilerplate function called `evaluation_function()` which is called when a grading request is made.
 
 Next, open `tests/grading.py` and `tests/validation.py`. These scripts are used for building unit tests that check your algorithm and schema work as they should using a library called _unittest_.
 
