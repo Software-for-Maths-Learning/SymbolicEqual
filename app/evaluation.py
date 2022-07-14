@@ -38,6 +38,7 @@ def evaluation_function(response, answer, params) -> dict:
     
     # Dealing with special cases
     res, ans = RecpTrig(res, ans)
+    res, ans = Decimals(res, ans)
 
     # Going from the simplest to complex tranformations available in sympy, check equality
     # https://github.com/sympy/sympy/wiki/Faq#why-does-sympy-say-that-two-equal-expressions-are-unequal
@@ -81,3 +82,26 @@ def RecpTrig(res, ans):
         ans = ans.rewrite(sin)
     return res, ans
 
+def Decimals(res, ans):
+    """
+    Decimals -> Turn into rational form
+    Otherwise x/2 not seen as equal to x*0.5
+    
+    Parameters
+    ----------
+    res : SymPy expression
+        Reponse Input from Teacher, might have decimals
+    ans : SymPy expression
+        Answer Input from Student, might have decimals
+
+    Returns
+    -------
+    res : SymPy expression
+        Updated response input
+    ans : SymPy expression
+        Updated answer input
+    """
+    from sympy import nsimplify
+    res = nsimplify(res)
+    ans = nsimplify(ans)
+    return res, ans
