@@ -89,6 +89,13 @@ class TestEvaluationFunction(unittest.TestCase):
 
         self.assertEqual(response.get("is_correct"), True)
 
+    def test_nested_absolute_correct(self):
+        body = {"response": "Abs(x+Abs(y))", "answer": "|x+|y||"}
+    
+        response = evaluation_function(body['response'], body['answer'], {})
+
+        self.assertEqual(response.get("is_correct"), True)
+
 
 if __name__ == "__main__":
     unittest.main()
