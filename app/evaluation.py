@@ -22,6 +22,9 @@ def evaluation_function(response, answer, params) -> dict:
     from sympy.parsing.sympy_parser import parse_expr
     from sympy import expand, simplify, trigsimp, latex
 
+    # Dealing with special cases that aren't accepted by SymPy
+    response, answer = Absolute(response, answer)
+
     # Safely try to parse answer and response into symbolic expressions
     try:
         res = parse_expr(response)
@@ -35,6 +38,10 @@ def evaluation_function(response, answer, params) -> dict:
 
     # Add how res was interpreted to the response
     interp = {"response_latex": latex(res)}
+    
+    # Dealing with special cases
+    res, ans = RecpTrig(res, ans)
+    res, ans = Decimals(res, ans)
 
     # Going from the simplest to complex tranformations available in sympy, check equality
     # https://github.com/sympy/sympy/wiki/Faq#why-does-sympy-say-that-two-equal-expressions-are-unequal
@@ -52,3 +59,105 @@ def evaluation_function(response, answer, params) -> dict:
         return {"is_correct": True, "level": "3", **interp}
 
     return {"is_correct": False, **interp}
+
+def RecpTrig(res, ans):
+    """
+    Reciprocal Trig Functions -> Turn sec, csc, cot into sin form
+    
+    Parameters
+    ----------
+    res : SymPy expression
+        Reponse Input from Teacher, might have sec, csc, cot
+    ans : SymPy expression
+        Answer Input from Student, might have sec, csc, cot
+
+    Returns
+    -------
+    res : SymPy expression
+        Updated response input
+    ans : SymPy expression
+        Updated answer input
+        
+    Tests
+    -----
+    Checks if '1+tan(x)**2 + y = sec(x)**2 + y', as this solves the issue
+    with sec(x)
+    """
+    from sympy import sec, csc, cot, sin
+    if res.has(sec) or res.has(csc) or res.has(cot):
+        res = res.rewrite(sin)
+    if ans.has(sec) or ans.has(csc) or ans.has(cot):
+        ans = ans.rewrite(sin)
+    return res, ans
+
+def Decimals(res, ans):
+    """
+    Decimals -> Turn into rational form
+    Otherwise x/2 not seen as equal to x*0.5
+    
+    Parameters
+    ----------
+    res : SymPy expression
+        Reponse Input from Teacher, might have decimals
+    ans : SymPy expression
+        Answer Input from Student, might have decimals
+
+    Returns
+    -------
+    res : SymPy expression
+        Updated response input
+    ans : SymPy expression
+        Updated answer input
+    
+    Tests
+    -----
+    Checks if x*0.5 = x/2
+    """
+    from sympy import nsimplify
+    res = nsimplify(res)
+    ans = nsimplify(ans)
+    return res, ans
+
+def Absolute(res, ans):
+    """
+    Accept || as another form of writing modulus of an expression. 
+    Function makes the input parseable by SymPy, SymPy only accepts Abs()
+
+    Parameters
+    ----------
+    res : string
+        Reponse Input from Teacher, might have ||
+    ans : string
+        Answer Input from Student, might have ||
+
+    Returns
+    -------
+    res : string
+        Updated response input
+    ans : string
+        Updated answer input
+        
+    Tests
+    -----
+    Checks if Abs(x)+y = |x|+y
+
+    """
+    # Response
+
+    # positions of the || values
+    abs_pos = [pos for pos, char in enumerate(res) if char == '|']
+    res = list(res)
+    # for each set of ||
+    for i in range(0, len(abs_pos), 2):
+        res[abs_pos[i]] = "Abs("
+        res[abs_pos[i+1]] = ")"
+    res = "".join(res)
+
+    abs_pos = [pos for pos, char in enumerate(ans) if char == '|']
+    ans = list(ans)
+    for i in range(0, len(abs_pos), 2):
+        ans[abs_pos[i]] = "Abs("
+        ans[abs_pos[i+1]] = ")"
+    ans = "".join(ans)
+
+    return res, ans

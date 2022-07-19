@@ -46,13 +46,6 @@ class TestEvaluationFunction(unittest.TestCase):
 
         self.assertEqual(response.get("is_correct"), True)
 
-    def test_simple_trig_correct(self):
-        body = {"response": "cos(x)**2 + sin(x)**2 + y", "answer": "y + 1"}
-
-        response = evaluation_function(body['response'], body['answer'], {})
-
-        self.assertEqual(response.get("is_correct"), True)
-
     def test_invalid_user_expression(self):
         body = {"response": "3x", "answer": "3*x"}
 
@@ -74,6 +67,27 @@ class TestEvaluationFunction(unittest.TestCase):
             body["answer"],
             {},
         )
+        
+    def test_recp_trig_correct(self):
+        body = {"response": "1+tan(x)**2 + y", "answer": "sec(x)**2 + y"}
+        
+        response = evaluation_function(body['response'], body['answer'], {})
+
+        self.assertEqual(response.get("is_correct"), True)
+    
+    def test_decimals_correct(self):
+        body = {"response": "x/2", "answer": "x*0.5"}
+        
+        response = evaluation_function(body['response'], body['answer'], {})
+
+        self.assertEqual(response.get("is_correct"), True)
+    
+    def test_absolute_correct(self):
+        body = {"response": "Abs(x)+y", "answer": "|x|+y"}
+    
+        response = evaluation_function(body['response'], body['answer'], {})
+
+        self.assertEqual(response.get("is_correct"), True)
 
 
 if __name__ == "__main__":
