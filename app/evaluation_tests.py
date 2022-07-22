@@ -1,7 +1,9 @@
 import unittest
 
-from .evaluation import evaluation_function
-
+try:
+    from .evaluation import evaluation_function
+except ImportError:
+    from evaluation import evaluation_function
 
 class TestEvaluationFunction(unittest.TestCase):
     """
@@ -67,34 +69,43 @@ class TestEvaluationFunction(unittest.TestCase):
             body["answer"],
             {},
         )
-        
+
     def test_recp_trig_correct(self):
         body = {"response": "1+tan(x)**2 + y", "answer": "sec(x)**2 + y"}
-        
+
         response = evaluation_function(body['response'], body['answer'], {})
 
         self.assertEqual(response.get("is_correct"), True)
-    
+
     def test_decimals_correct(self):
         body = {"response": "x/2", "answer": "x*0.5"}
         
         response = evaluation_function(body['response'], body['answer'], {})
 
         self.assertEqual(response.get("is_correct"), True)
-    
+
     def test_absolute_correct(self):
-        body = {"response": "Abs(x)+y", "answer": "|x|+y"}
-    
+        body = {"response": "|x|+y", "answer": "Abs(x)+y"}
+
         response = evaluation_function(body['response'], body['answer'], {})
 
         self.assertEqual(response.get("is_correct"), True)
 
-    def test_nested_absolute_correct(self):
-        body = {"response": "Abs(x+Abs(y))", "answer": "|x+|y||"}
-    
-        response = evaluation_function(body['response'], body['answer'], {})
+    def test_nested_absolute_error(self):
+        body = {"response": "|x+|y||", "answer": "Abs(x+Abs(y))"}
 
-        self.assertEqual(response.get("is_correct"), True)
+        with self.assertRaises(SyntaxWarning) as cm:
+            evaluation_function(body["response"], body["answer"], {})
+
+        self.assertEqual(cm.exception.args[1] == "tooMany|InResponse", True)
+
+    def test_many_absolute_error(self):
+        body = {"response": "Abs(x)+Abs(y)", "answer": "|x|+|y|"}
+
+        with self.assertRaises(SyntaxWarning) as cm:
+            evaluation_function(body["response"], body["answer"], {})
+
+        self.assertEqual(cm.exception.args[1] == "tooMany|InAnswer", True)
 
 
 if __name__ == "__main__":

@@ -122,6 +122,9 @@ def Absolute(res, ans):
     """
     Accept || as another form of writing modulus of an expression. 
     Function makes the input parseable by SymPy, SymPy only accepts Abs()
+    REMARK: this function cannot handle nested || and will raise a 
+    SyntaxWarning if more than two | are present in the answer or the 
+    response
 
     Parameters
     ----------
@@ -140,9 +143,18 @@ def Absolute(res, ans):
     Tests
     -----
     Checks if Abs(x)+y = |x|+y
+    Checks if giving |x+|y|| as response raises a SyntaxWarning
+    Checks if giving |x|+|y| as answer raises a SyntaxWarning
 
     """
     # Response
+
+    n_ans = ans.count('|')
+    n_res = res.count('|')
+    if n_ans > 2:
+        raise SyntaxWarning("Notation in answer might be ambiguous, use Abs() instead of ||","tooMany|InAnswer")
+    if n_res > 2:
+        raise SyntaxWarning("Notation might be ambiguous, use Abs() instead of ||","tooMany|InResponse")
 
     # positions of the || values
     abs_pos = [pos for pos, char in enumerate(res) if char == '|']
