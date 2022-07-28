@@ -38,27 +38,46 @@ def evaluation_function(response, answer, params) -> dict:
 
     # Add how res was interpreted to the response
     interp = {"response_latex": latex(res)}
-    
+
     # Dealing with special cases
     res, ans = RecpTrig(res, ans)
     res, ans = Decimals(res, ans)
 
     # Going from the simplest to complex tranformations available in sympy, check equality
     # https://github.com/sympy/sympy/wiki/Faq#why-does-sympy-say-that-two-equal-expressions-are-unequal
-    is_correct = bool(res.expand() == ans.expand())
+    res = res.expand()
+    is_correct = bool(res == ans.expand())
     if is_correct:
-        return {"is_correct": True, "level": "1", **interp}
+        return {
+            "is_correct": True,
+            "level": "1",
+            "response_simplified": str(res),
+            **interp
+        }
 
-    is_correct = bool(res.simplify() == ans.simplify())
+    res = res.simplify()
+    is_correct = bool(res == ans.simplify())
     if is_correct:
-        return {"is_correct": True, "level": "2", **interp}
+        return {
+            "is_correct": True,
+            "level": "2",
+            "response_simplified": str(res),
+            **interp
+        }
 
     # Looks for trig identities
+    res = res.trigsimp()
     is_correct = bool(res.trigsimp() == ans.trigsimp())
     if is_correct:
-        return {"is_correct": True, "level": "3", **interp}
+        return {
+            "is_correct": True,
+            "level": "3",
+            "response_simplified": str(res),
+            **interp
+        }
 
-    return {"is_correct": False, **interp}
+    return {"is_correct": False, "response_simplified": str(res), **interp}
+
 
 def RecpTrig(res, ans):
     """
@@ -90,6 +109,7 @@ def RecpTrig(res, ans):
         ans = ans.rewrite(sin)
     return res, ans
 
+
 def Decimals(res, ans):
     """
     Decimals -> Turn into rational form
@@ -117,6 +137,7 @@ def Decimals(res, ans):
     res = nsimplify(res)
     ans = nsimplify(ans)
     return res, ans
+
 
 def Absolute(res, ans):
     """
@@ -152,9 +173,13 @@ def Absolute(res, ans):
     n_ans = ans.count('|')
     n_res = res.count('|')
     if n_ans > 2:
-        raise SyntaxWarning("Notation in answer might be ambiguous, use Abs() instead of ||","tooMany|InAnswer")
+        raise SyntaxWarning(
+            "Notation in answer might be ambiguous, use Abs() instead of ||",
+            "tooMany|InAnswer")
     if n_res > 2:
-        raise SyntaxWarning("Notation might be ambiguous, use Abs() instead of ||","tooMany|InResponse")
+        raise SyntaxWarning(
+            "Notation might be ambiguous, use Abs() instead of ||",
+            "tooMany|InResponse")
 
     # positions of the || values
     abs_pos = [pos for pos, char in enumerate(res) if char == '|']
@@ -162,14 +187,14 @@ def Absolute(res, ans):
     # for each set of ||
     for i in range(0, len(abs_pos), 2):
         res[abs_pos[i]] = "Abs("
-        res[abs_pos[i+1]] = ")"
+        res[abs_pos[i + 1]] = ")"
     res = "".join(res)
 
     abs_pos = [pos for pos, char in enumerate(ans) if char == '|']
     ans = list(ans)
     for i in range(0, len(abs_pos), 2):
         ans[abs_pos[i]] = "Abs("
-        ans[abs_pos[i+1]] = ")"
+        ans[abs_pos[i + 1]] = ")"
     ans = "".join(ans)
 
     return res, ans
