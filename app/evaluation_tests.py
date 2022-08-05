@@ -107,6 +107,41 @@ class TestEvaluationFunction(unittest.TestCase):
 
         self.assertEqual(cm.exception.args[1] == "tooMany|InAnswer", True)
 
+    def test_clashing_symbols(self):
+        params = {}
+        response = "beta+gamma+zeta+I+N+O+Q+S+E"
+        answer = "E+S+Q+O+N+I+zeta+gamma+beta"
+        result = evaluation_function(response, answer, params)
+        self.assertEqual(result.get("is_correct"), True)
+
+    def test_special_constants(self):
+        response = "pi"
+        answer = "2*asin(1)"
+        params = {}
+        result = evaluation_function(response, answer, params)
+        self.assertEqual(result.get("is_correct"), True)
+
+    def test_complex_numbers(self):
+        response = "I"
+        answer = "(-1)**(1/2)"
+        params = {"complexNumbers": True}
+        result = evaluation_function(response, answer, params)
+        self.assertEqual(result.get("is_correct"), True)
+
+    def test_special_functions(self):
+        params = {"specialFunctions": True}
+        response = "beta(1,x)"
+        answer = "1/x"
+        result = evaluation_function(response, answer, params)
+        self.assertEqual(result.get("is_correct"), True)
+        response = "gamma(5)"
+        answer = "4*3*2"
+        result = evaluation_function(response, answer, params)
+        self.assertEqual(result.get("is_correct"), True)
+        response = "zeta(2)"
+        answer = "pi**2/6"
+        result = evaluation_function(response, answer, params)
+        self.assertEqual(result.get("is_correct"), True)
 
 if __name__ == "__main__":
     unittest.main()
