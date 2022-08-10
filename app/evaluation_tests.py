@@ -5,6 +5,7 @@ try:
 except ImportError:
     from evaluation import evaluation_function
 
+
 class TestEvaluationFunction(unittest.TestCase):
     """
     TestCase Class used to test the algorithm.
@@ -79,7 +80,7 @@ class TestEvaluationFunction(unittest.TestCase):
 
     def test_decimals_correct(self):
         body = {"response": "x/2", "answer": "x*0.5"}
-        
+
         response = evaluation_function(body['response'], body['answer'], {})
 
         self.assertEqual(response.get("is_correct"), True)
@@ -142,6 +143,21 @@ class TestEvaluationFunction(unittest.TestCase):
         answer = "pi**2/6"
         result = evaluation_function(response, answer, params)
         self.assertEqual(result.get("is_correct"), True)
+
+    def test_simplified_in_correct_response(self):
+        response = "a*x + b"
+        answer = "b + a*x"
+
+        res = evaluation_function(response, answer, {})
+        self.assertIn("response_simplified", res)
+
+    def test_simplified_in_wrong_response(self):
+        response = "a*x + b"
+        answer = "b + a*x + 8"
+
+        res = evaluation_function(response, answer, {})
+        self.assertIn("response_simplified", res)
+
 
 if __name__ == "__main__":
     unittest.main()
