@@ -19,6 +19,7 @@ Outputs to the `eval` command will feature:
   "result": {
     "is_correct": "<bool>",
     "response_latex": "<str>",
+    "response_simplified": "<str>",
     "level": "<int>"
   }
 }
@@ -30,5 +31,8 @@ This is a latex string, indicating how the user's `response` was understood by S
 
 ### `level`
 The function tests equality using three levels, of increasing complexity. This parameter indicates the level at which equality was found. It is not present if the result is incorrect.
+
+### `response_simplified`
+This is a math-simplified string of the given response. All mathematically-equivalent expressions will yield identical strings under this field. This can be used by teacher dashboards when aggregating common student errors. 
 
 ## Examples
