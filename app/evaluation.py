@@ -23,13 +23,13 @@ def evaluation_function(response, answer, params) -> dict:
     from sympy import expand, simplify, trigsimp, latex, Symbol
     from sympy import pi
 
-    if params.get("specialFunctions",False) == True:
+    if params.get("specialFunctions", False) == True:
         from sympy import beta, gamma, zeta
     else:
         beta = Symbol("beta")
         gamma = Symbol("gamma")
         zeta = Symbol("zeta")
-    if params.get("complexNumbers",False) == True:
+    if params.get("complexNumbers", False) == True:
         from sympy import I
     else:
         I = Symbol("I")
@@ -38,19 +38,29 @@ def evaluation_function(response, answer, params) -> dict:
     O = Symbol("O")
     Q = Symbol("Q")
     S = Symbol("S")
-    symbol_dict = {"beta": beta,"gamma": gamma, "zeta": zeta, "I": I, "N": N, "O": O, "Q": Q, "S": S, "E": E}
+    symbol_dict = {
+        "beta": beta,
+        "gamma": gamma,
+        "zeta": zeta,
+        "I": I,
+        "N": N,
+        "O": O,
+        "Q": Q,
+        "S": S,
+        "E": E
+    }
 
     # Dealing with special cases that aren't accepted by SymPy
     response, answer = Absolute(response, answer)
 
     # Safely try to parse answer and response into symbolic expressions
     try:
-        res = parse_expr(response, local_dict = symbol_dict)
+        res = parse_expr(response, local_dict=symbol_dict)
     except (SyntaxError, TypeError) as e:
         raise Exception("SymPy was unable to parse the response") from e
 
     try:
-        ans = parse_expr(answer, local_dict = symbol_dict)
+        ans = parse_expr(answer, local_dict=symbol_dict)
     except (SyntaxError, TypeError) as e:
         raise Exception("SymPy was unable to parse the answer") from e
 
@@ -69,7 +79,7 @@ def evaluation_function(response, answer, params) -> dict:
         return {
             "is_correct": True,
             "level": "1",
-            "response_simplified": str(res),
+            "response_simplified": str(ans),
             **interp
         }
 
@@ -79,7 +89,7 @@ def evaluation_function(response, answer, params) -> dict:
         return {
             "is_correct": True,
             "level": "2",
-            "response_simplified": str(res),
+            "response_simplified": str(ans),
             **interp
         }
 
@@ -90,7 +100,7 @@ def evaluation_function(response, answer, params) -> dict:
         return {
             "is_correct": True,
             "level": "3",
-            "response_simplified": str(res),
+            "response_simplified": str(ans),
             **interp
         }
 
