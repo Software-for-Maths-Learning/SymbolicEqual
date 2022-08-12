@@ -6,8 +6,8 @@ def evaluation_function(response, answer, params) -> dict:
 
     # This code handles the plus_minus and minus_plus operators
     # actual symbolic comparison is done in check_equality
-    if "multiple_answers_critera" not in params.keys():
-        params.update({"multiple_answers_critera": "all"})
+    if "multiple_answers_criteria" not in params.keys():
+        params.update({"multiple_answers_criteria": "all"})
 
     if "plus_minus" in params.keys():
         answer = answer.replace(params["plus_minus"],"plus_minus")
@@ -47,11 +47,11 @@ def evaluation_function(response, answer, params) -> dict:
                 interp = result["response_latex"]
             else:
                 interp += ", "+result["response_latex"]
-        if params["multiple_answers_critera"] == "all":
+        if params["multiple_answers_criteria"] == "all":
             is_correct = all(matches["responses"]) and all(matches["answers"])
-        elif params["multiple_answers_critera"] == "all_responses":
+        elif params["multiple_answers_criteria"] == "all_responses":
             is_correct = all(matches["responses"])
-        elif params["multiple_answers_critera"] == "all_answers":
+        elif params["multiple_answers_criteria"] == "all_answers":
             is_correct = all(matches["answers"])
         else:
             raise SyntaxWarning(f"Unknown multiple_answers_criteria: {params['multiple_answers_critera']}")

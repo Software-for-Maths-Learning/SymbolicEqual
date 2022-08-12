@@ -173,7 +173,7 @@ class TestEvaluationFunction(unittest.TestCase):
     def test_plus_minus_all_responses_correct(self):
         response = "x**2 - y**2"
         answer = "plus_minus x**2 + minus_plus y**2"
-        params = {"multiple_answers_critera": "all_responses"}
+        params = {"multiple_answers_criteria": "all_responses"}
 
         result = evaluation_function(response, answer, params)
 
@@ -182,7 +182,7 @@ class TestEvaluationFunction(unittest.TestCase):
     def test_plus_minus_all_responses_incorrect(self):
         response = "-x**2 - y**2"
         answer = "plus_minus x**2 + minus_plus y**2"
-        params = {"multiple_answers_critera": "all_responses"}
+        params = {"multiple_answers_criteria": "all_responses"}
 
         result = evaluation_function(response, answer, params)
 
@@ -191,7 +191,7 @@ class TestEvaluationFunction(unittest.TestCase):
     def test_plus_minus_all_answers_correct(self):
         response = "-x**2"
         answer = "plus_minus minus_plus x**2"
-        params = {"multiple_answers_critera": "all_responses"}
+        params = {"multiple_answers_criteria": "all_responses"}
 
         result = evaluation_function(response, answer, params)
 
@@ -200,7 +200,7 @@ class TestEvaluationFunction(unittest.TestCase):
     def test_plus_minus_all_answers_incorrect(self):
         response = "x**2"
         answer = "plus_minus minus_plus x**2"
-        params = {"multiple_answers_critera": "all_responses"}
+        params = {"multiple_answers_criteria": "all_responses"}
 
         result = evaluation_function(response, answer, params)
 
