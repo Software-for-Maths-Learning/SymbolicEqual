@@ -1,4 +1,5 @@
 # Base image that bundles AWS Lambda Python 3.8 image with some middleware functions
+# FROM base-eval-tmp
 FROM rabidsheep55/python-base-eval-layer
 
 WORKDIR /app
@@ -12,7 +13,8 @@ COPY evaluation.py ./app/
 COPY evaluation_tests.py ./app/
 
 # Copy Documentation
-COPY docs.md ./app/
+COPY docs/dev.md ./app/docs/dev.md
+COPY docs/user.md ./app/docs/user.md
 
 # Set permissions so files and directories can be accessed on AWS
 RUN chmod 644 $(find . -type f)
