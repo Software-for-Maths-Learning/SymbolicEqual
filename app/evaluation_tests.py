@@ -49,6 +49,13 @@ class TestEvaluationFunction(unittest.TestCase):
 
         self.assertEqual_input_variations(response, answer, params, True)
 
+    def test_simple_polynomial_with_input_symbols_correct(self):
+        response = "3*longName**2 + 3*longName +  5"
+        answer = "2+3+longName+2*longName + 3*longName * longName"
+        params = {"strict_syntax": False, "input_symbols": [["longName",[]]]}
+
+        self.assertEqual_input_variations(response, answer, params, True)
+
     def test_simple_polynomial_incorrect(self):
         response = "3*x**2 + 3*x +  5"
         answer = "2+3+x+2*x + x*x*3 - x"
