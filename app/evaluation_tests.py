@@ -25,29 +25,43 @@ class TestEvaluationFunction(unittest.TestCase):
     as it should.
     """
 
+    def assertEqual_input_variations(self, response, answer, params, value):
+        result = evaluation_function(response, answer, params)
+        self.assertEqual(result.get("is_correct"), value)
+        variation_definitions = [lambda x : x.replace('**','^'),
+                                 lambda x : x.replace('**','^').replace('*',' '),
+                                 lambda x : x.replace('**','^').replace('*','')]
+        for variation in variation_definitions:
+            response_variation = variation(response)
+            answer_variation = variation(answer)
+            if (response_variation != response) or (answer_variation != answer):
+                result = evaluation_function(response_variation, answer, params)
+                self.assertEqual(result.get("is_correct"), value)
+                result = evaluation_function(response, answer_variation, params)
+                self.assertEqual(result.get("is_correct"), value)
+                result = evaluation_function(response_variation, answer_variation , params)
+                self.assertEqual(result.get("is_correct"), value)
+
     def test_simple_polynomial_correct(self):
-        body = {"response": "3*x**2 + 3*x +  5", "answer": "2+3+x+2*x + x*x*3"}
+        response = "3*x**2 + 3*x +  5"
+        answer = "2+3+x+2*x + x*x*3"
+        params = {"strict_syntax": False}
 
-        response = evaluation_function(body['response'], body['answer'], {})
-
-        self.assertEqual(response.get("is_correct"), True)
+        self.assertEqual_input_variations(response, answer, params, True)
 
     def test_simple_polynomial_incorrect(self):
-        body = {
-            "response": "3*x**2 + 3*x +  5",
-            "answer": "2+3+x+2*x + x*x*3 - x"
-        }
+        response = "3*x**2 + 3*x +  5"
+        answer = "2+3+x+2*x + x*x*3 - x"
+        params = {"strict_syntax": False}
 
-        response = evaluation_function(body['response'], body['answer'], {})
-
-        self.assertEqual(response.get("is_correct"), False)
+        self.assertEqual_input_variations(response, answer, params, False)
 
     def test_simple_trig_correct(self):
-        body = {"response": "cos(x)**2 + sin(x)**2 + y", "answer": "y + 1"}
+        response = "cos(x)**2 + sin(x)**2 + y"
+        answer = "y + 1"
+        params = {"strict_syntax": False}
 
-        response = evaluation_function(body['response'], body['answer'], {})
-
-        self.assertEqual(response.get("is_correct"), True)
+        self.assertEqual_input_variations(response, answer, params, True)
 
     def test_invalid_user_expression(self):
         body = {"response": "3x", "answer": "3*x"}
@@ -72,25 +86,25 @@ class TestEvaluationFunction(unittest.TestCase):
         )
 
     def test_recp_trig_correct(self):
-        body = {"response": "1+tan(x)**2 + y", "answer": "sec(x)**2 + y"}
+        response = "1+tan(x)**2 + y"
+        answer = "sec(x)**2 + y"
+        params = {"strict_syntax": False}
 
-        response = evaluation_function(body['response'], body['answer'], {})
-
-        self.assertEqual(response.get("is_correct"), True)
+        self.assertEqual_input_variations(response, answer, params, True)
 
     def test_decimals_correct(self):
-        body = {"response": "x/2", "answer": "x*0.5"}
+        response = "x/2"
+        answer = "0.5*x"
+        params = {"strict_syntax": False}
 
-        response = evaluation_function(body['response'], body['answer'], {})
-
-        self.assertEqual(response.get("is_correct"), True)
+        self.assertEqual_input_variations(response, answer, params, True)
 
     def test_absolute_correct(self):
-        body = {"response": "|x|+y", "answer": "Abs(x)+y"}
+        response = "|x|+y"
+        answer = "Abs(x)+y"
+        params = {"strict_syntax": False}
 
-        response = evaluation_function(body['response'], body['answer'], {})
-
-        self.assertEqual(response.get("is_correct"), True)
+        self.assertEqual_input_variations(response, answer, params, True)
 
     def test_nested_absolute_error(self):
         body = {"response": "|x+|y||", "answer": "Abs(x+Abs(y))"}
@@ -118,16 +132,16 @@ class TestEvaluationFunction(unittest.TestCase):
     def test_special_constants(self):
         response = "pi"
         answer = "2*asin(1)"
-        params = {}
-        result = evaluation_function(response, answer, params)
-        self.assertEqual(result.get("is_correct"), True)
+        params = {"strict_syntax": False}
+
+        self.assertEqual_input_variations(response, answer, params, True)
 
     def test_complex_numbers(self):
         response = "I"
         answer = "(-1)**(1/2)"
-        params = {"complexNumbers": True}
-        result = evaluation_function(response, answer, params)
-        self.assertEqual(result.get("is_correct"), True)
+        params = {"complexNumbers": True, "strict_syntax": False}
+
+        self.assertEqual_input_variations(response, answer, params, True)
 
     def test_special_functions(self):
         params = {"specialFunctions": True}

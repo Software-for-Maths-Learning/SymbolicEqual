@@ -1,3 +1,6 @@
+from sympy.parsing.sympy_parser import T as parser_transformations
+from sympy.parsing.sympy_parser import parse_expr, split_symbols_custom
+
 def evaluation_function(response, answer, params) -> dict:
     """
     Function used to grade a student response.
@@ -19,9 +22,14 @@ def evaluation_function(response, answer, params) -> dict:
     to output the grading response.
     """
 
-    from sympy.parsing.sympy_parser import parse_expr
     from sympy import expand, simplify, trigsimp, latex, Symbol
     from sympy import pi
+
+    do_transformations = not params.get("strict_syntax",True)
+
+    unsplittable_symbols = tuple()
+    if "input_symbols" in params.keys():
+        unsplittable_symbols += tuple(x[0] for x in params["input_symbols"])
 
     if params.get("specialFunctions", False) == True:
         from sympy import beta, gamma, zeta
@@ -55,12 +63,12 @@ def evaluation_function(response, answer, params) -> dict:
 
     # Safely try to parse answer and response into symbolic expressions
     try:
-        res = parse_expr(response, local_dict=symbol_dict)
+        res = ParseExpression(response, do_transformations, unsplittable_symbols, local_dict=symbol_dict)
     except (SyntaxError, TypeError) as e:
         raise Exception("SymPy was unable to parse the response") from e
 
     try:
-        ans = parse_expr(answer, local_dict=symbol_dict)
+        ans = ParseExpression(answer, do_transformations, unsplittable_symbols, local_dict=symbol_dict)
     except (SyntaxError, TypeError) as e:
         raise Exception("SymPy was unable to parse the answer") from e
 
@@ -226,3 +234,10 @@ def Absolute(res, ans):
     ans = "".join(ans)
 
     return res, ans
+
+def ParseExpression(expr, do_transformations, unsplittable_symbols, local_dict = None):
+    if do_transformations:
+        transformations = parser_transformations[0:4,6]+(split_symbols_custom(lambda x: x not in unsplittable_symbols),)+parser_transformations[8]
+    else:
+        transformations = parser_transformations[0:4]
+    return parse_expr(expr,transformations=transformations,local_dict=local_dict)
