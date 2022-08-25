@@ -18,10 +18,28 @@ def evaluation_function(response, answer, params) -> dict:
     return types and that evaluation_function() is the main function used
     to output the grading response.
     """
+    #Accept multiple different answers as correct
+    answer.strip()
+    response.strip()
+
+    if answer.find(",") != -1:
+        if response.find(",") != -1:
+            response_list = re.split(r", |,| ,", response)
+            answer_list = re.split(r", |,| ,", answer)
+
+            answer = ''
+            response = ''
+                
+            for i in range(len(answer_list)):
+                for j in range(len(response_list)):
+                    if response_list[j] == answer_list[i]:
+                        answer = answer + answer_list[i] + ', '
+                        response = response + response_list[j] + ', '
 
     from sympy.parsing.sympy_parser import parse_expr
     from sympy import expand, simplify, trigsimp, latex, Symbol
     from sympy import pi
+    import re
 
     if params.get("specialFunctions", False) == True:
         from sympy import beta, gamma, zeta
@@ -52,6 +70,7 @@ def evaluation_function(response, answer, params) -> dict:
 
     # Dealing with special cases that aren't accepted by SymPy
     response, answer = Absolute(response, answer)
+                        
 
     # Safely try to parse answer and response into symbolic expressions
     try:
