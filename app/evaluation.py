@@ -1,12 +1,13 @@
 from sympy.parsing.sympy_parser import T as parser_transformations
 from sympy.parsing.sympy_parser import parse_expr, split_symbols_custom
+from sympy import Equality
 
 def evaluation_function(response, answer, params) -> dict:
 
     """
     Function used to symbolically compare two expressions.
     """
-    
+
     # This code handles the plus_minus and minus_plus operators
     # actual symbolic comparison is done in check_equality
     if "multiple_answers_criteria" not in params.keys():
@@ -187,12 +188,14 @@ def check_equality(response, answer, params) -> dict:
 
     do_transformations = not params.get("strict_syntax",True)
 
-    unsplittable_symbols = tuple()
+    unsplittable_symbols = tuple()+(params.get("plus_minus","plus_minus"),params.get("minus_plus","minus_plus"))
+
     if "input_symbols" in params.keys():
         unsplittable_symbols += tuple(x[0] for x in params["input_symbols"])
 
     if params.get("specialFunctions", False) == True:
         from sympy import beta, gamma, zeta
+        unsplittable_symbols += ("beta", "gamma", "zeta")
     else:
         beta = Symbol("beta")
         gamma = Symbol("gamma")
@@ -253,6 +256,33 @@ def check_equality(response, answer, params) -> dict:
     # Add how res was interpreted to the response
     interp = {"response_latex": latex(res)}
 
+    if (not isinstance(res,Equality)) and isinstance(ans,Equality):
+        return {
+            "is_correct": False,
+            "feedback": "The response was an expression but was expected to be an equality."
+            "response_simplified": str(ans),
+            **interp
+        }
+        return
+
+    if isinstance(res,Equality) and (not isinstance(ans,Equality)):
+        return {
+            "is_correct": False,
+            "feedback": "The response was an equality but was expected to be an expression."
+            "response_simplified": str(ans),
+            **interp
+        }
+        return
+
+    if isinstance(res,Equality) and isinstance(ans,Equality):
+        is_correct = ((res.args[0]-res.args[1])/(res.args[0]-res.args[1])).simplify().is_constant()
+        return {
+            "is_correct": is_correct,
+            "response_simplified": str(ans),
+            **interp
+        }
+        return
+
     # Dealing with special cases
     res, ans = RecpTrig(res, ans)
     res, ans = Decimals(res, ans)
@@ -294,9 +324,9 @@ def check_equality(response, answer, params) -> dict:
 
 def ParseExpression(expr, do_transformations, unsplittable_symbols, local_dict = None):
     if do_transformations:
-        transformations = parser_transformations[0:4,6]+(split_symbols_custom(lambda x: x not in unsplittable_symbols),)+parser_transformations[8]
+        transformations = parser_transformations[0:4,6,9]+(split_symbols_custom(lambda x: x not in unsplittable_symbols),)+parser_transformations[8]
     else:
-        transformations = parser_transformations[0:4]
+        transformations = parser_transformations[0:4,9]
     return parse_expr(expr,transformations=transformations,local_dict=local_dict)
 
 def find_matching_parenthesis(string,index):

@@ -167,82 +167,65 @@ class TestEvaluationFunction(unittest.TestCase):
         self.assertEqual_input_variations(response, answer, params, True)
 
     def test_special_functions(self):
-        params = {"specialFunctions": True}
+        params = {"specialFunctions": True, "strict_syntax": False}
         response = "beta(1,x)"
         answer = "1/x"
-        result = evaluation_function(response, answer, params)
-        self.assertEqual(result.get("is_correct"), True)
+        self.assertEqual_input_variations(response, answer, params, True)
         response = "gamma(5)"
-        answer = "4*3*2"
-        result = evaluation_function(response, answer, params)
-        self.assertEqual(result.get("is_correct"), True)
+        answer = "24"
+        self.assertEqual_input_variations(response, answer, params, True)
         response = "zeta(2)"
         answer = "pi**2/6"
-        result = evaluation_function(response, answer, params)
-        self.assertEqual(result.get("is_correct"), True)
+        self.assertEqual_input_variations(response, answer, params, True)
 
     def test_plus_minus_all_correct(self):
         response = "-minus_plus x**2 - plus_minus y**2"
         answer = "plus_minus x**2 + minus_plus y**2"
-        params = {}
+        params = {"strict_syntax": False}
 
-        result = evaluation_function(response, answer, params)
-
-        self.assertEqual(result.get("is_correct"), True)
+        self.assertEqual_input_variations(response, answer, params, True)
 
     def test_plus_minus_replace_symbols_all_correct(self):
         response = "- -+ x**2 - +- y**2"
         answer = "+- x**2 + -+ y**2"
-        params = {"plus_minus": "+-", "minus_plus": "-+"}
+        params = {"plus_minus": "+-", "minus_plus": "-+", "strict_syntax": False}
 
-        result = evaluation_function(response, answer, params)
-
-        self.assertEqual(result.get("is_correct"), True)
+        self.assertEqual_input_variations(response, answer, params, True)
 
     def test_plus_minus_all_incorrect(self):
         response = "plus_minus x**2 - minus_plus y**2"
         answer = "plus_minus x**2 + minus_plus y**2"
-        params = {}
+        params = {"strict_syntax": False}
 
-        result = evaluation_function(response, answer, params)
-
-        self.assertEqual(result.get("is_correct"), False)
+        self.assertEqual_input_variations(response, answer, params, False)
 
     def test_plus_minus_all_responses_correct(self):
         response = "x**2 - y**2"
         answer = "plus_minus x**2 + minus_plus y**2"
-        params = {"multiple_answers_criteria": "all_responses"}
+        params = {"multiple_answers_criteria": "all_responses", "strict_syntax": False}
 
-        result = evaluation_function(response, answer, params)
-
-        self.assertEqual(result.get("is_correct"), True)
+        self.assertEqual_input_variations(response, answer, params, True)
 
     def test_plus_minus_all_responses_incorrect(self):
         response = "-x**2 - y**2"
         answer = "plus_minus x**2 + minus_plus y**2"
-        params = {"multiple_answers_criteria": "all_responses"}
+        params = {"multiple_answers_criteria": "all_responses", "strict_syntax": False}
 
-        result = evaluation_function(response, answer, params)
-
-        self.assertEqual(result.get("is_correct"), False)
+        self.assertEqual_input_variations(response, answer, params, False)
 
     def test_plus_minus_all_answers_correct(self):
         response = "-x**2"
         answer = "plus_minus minus_plus x**2"
-        params = {"multiple_answers_criteria": "all_responses"}
+        params = {"multiple_answers_criteria": "all_responses", "strict_syntax": False}
 
-        result = evaluation_function(response, answer, params)
-
-        self.assertEqual(result.get("is_correct"), True)
+        self.assertEqual_input_variations(response, answer, params, True)
 
     def test_plus_minus_all_answers_incorrect(self):
         response = "x**2"
         answer = "plus_minus minus_plus x**2"
-        params = {"multiple_answers_criteria": "all_responses"}
+        params = {"multiple_answers_criteria": "all_responses", "strict_syntax": False}
 
-        result = evaluation_function(response, answer, params)
-
-        self.assertEqual(result.get("is_correct"), False)
+        self.assertEqual_input_variations(response, answer, params, False)
 
     def test_simplified_in_correct_response(self):
         response = "a*x + b"
@@ -257,6 +240,13 @@ class TestEvaluationFunction(unittest.TestCase):
 
         res = evaluation_function(response, answer, {})
         self.assertIn("response_simplified", res)
+
+    def test_equality_sign_in_answer(self):
+        response = "2*x**2 = 10*y**2+14"
+        answer = "x**2-5*y**2-7=0"
+        params = {"strict_syntax": False}
+
+        self.assertEqual_input_variations(response, answer, params, True)
 
 if __name__ == "__main__":
     unittest.main()
