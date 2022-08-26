@@ -71,7 +71,7 @@ class TestEvaluationFunction(unittest.TestCase):
         self.assertEqual_input_variations(response, answer, params, True)
 
     def test_simple_fractional_powers_correct(self):
-        params = {"strict_syntax": False, "symbol_properties": "('g','positive') ('v','positive')"}
+        params = {"strict_syntax": False, "symbol_assumptions": "('g','positive') ('v','positive')"}
         fractional_powers_res = ["sqrt(v)/sqrt(g)","v**(1/2)/g**(1/2)","v**(0.5)/g**(0.5)"]
         fractional_powers_ans = ["sqrt(v/g)","(v/g)**(1/2)","(v/g)**(0.5)"]
         for response in fractional_powers_ans:
