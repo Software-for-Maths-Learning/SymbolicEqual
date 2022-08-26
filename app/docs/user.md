@@ -42,4 +42,4 @@ In general $\frac{\sqrt{a}}{\sqrt{b}} \neq \sqrt{\frac{a}{b}}$ but if $a > 0$ an
 So if expression like these are expected in the answer and/or response then it is a good idea to use the `symbol_assumptions` parameter to note that $a > 0$ and $b > 0$. This can be done by setting `symbol_assumptions` to `('a','positive') ('b','positive')`.
 
 The example given in the example problem set uses an EXPRESSION response area that uses `SymbolicEqual` with answer `sqrt(a/b)`, `strict_syntax` set to false and `symbol_assumptions` set as above. Some examples of expressions that are accepted as correct:
-`sqrt(a)/sqrt(b)`, `(a/b)**(1/2)`, `a**(1/2)/b**(1/2)`, `(a/b)**(0.5)`, `a**(0.5)/b**(0.5)`
+`sqrt(a)/sqrt(b)`, `(a/b)**(1/2)`, `a**(1/2)/b**(1/2)`, `(a/b)^(0.5)`, `a^(0.5)/b^(0.5)`
