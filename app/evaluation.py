@@ -187,12 +187,14 @@ def check_equality(response, answer, params) -> dict:
 
     do_transformations = not params.get("strict_syntax",True)
 
-    unsplittable_symbols = tuple()
+    unsplittable_symbols = tuple()+(params.get("plus_minus","plus_minus"),params.get("minus_plus","minus_plus"))
+
     if "input_symbols" in params.keys():
         unsplittable_symbols += tuple(x[0] for x in params["input_symbols"])
 
     if params.get("specialFunctions", False) == True:
         from sympy import beta, gamma, zeta
+        unsplittable_symbols += ("beta", "gamma", "zeta")
     else:
         beta = Symbol("beta")
         gamma = Symbol("gamma")
