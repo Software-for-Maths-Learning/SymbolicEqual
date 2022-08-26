@@ -261,8 +261,7 @@ def check_equality(response, answer, params) -> dict:
 
     # Going from the simplest to complex tranformations available in sympy, check equality
     # https://github.com/sympy/sympy/wiki/Faq#why-does-sympy-say-that-two-equal-expressions-are-unequal
-    res = res.expand()
-    is_correct = bool(res == ans.expand())
+    is_correct = bool(res.expand() == ans.expand())
     if is_correct:
         return {
             "is_correct": True,
@@ -271,8 +270,7 @@ def check_equality(response, answer, params) -> dict:
             **interp
         }
 
-    res = res.simplify()
-    is_correct = bool(res == ans.simplify())
+    is_correct = bool(res.simplify() == ans.simplify())
     if is_correct:
         return {
             "is_correct": True,
@@ -282,7 +280,6 @@ def check_equality(response, answer, params) -> dict:
         }
 
     # Looks for trig identities
-    res = res.trigsimp()
     is_correct = bool(res.trigsimp() == ans.trigsimp())
     if is_correct:
         return {
