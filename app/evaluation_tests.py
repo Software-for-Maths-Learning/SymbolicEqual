@@ -181,6 +181,69 @@ class TestEvaluationFunction(unittest.TestCase):
         result = evaluation_function(response, answer, params)
         self.assertEqual(result.get("is_correct"), True)
 
+    def test_plus_minus_all_correct(self):
+        response = "-minus_plus x**2 - plus_minus y**2"
+        answer = "plus_minus x**2 + minus_plus y**2"
+        params = {}
+
+        result = evaluation_function(response, answer, params)
+
+        self.assertEqual(result.get("is_correct"), True)
+
+    def test_plus_minus_replace_symbols_all_correct(self):
+        response = "- -+ x**2 - +- y**2"
+        answer = "+- x**2 + -+ y**2"
+        params = {"plus_minus": "+-", "minus_plus": "-+"}
+
+        result = evaluation_function(response, answer, params)
+
+        self.assertEqual(result.get("is_correct"), True)
+
+    def test_plus_minus_all_incorrect(self):
+        response = "plus_minus x**2 - minus_plus y**2"
+        answer = "plus_minus x**2 + minus_plus y**2"
+        params = {}
+
+        result = evaluation_function(response, answer, params)
+
+        self.assertEqual(result.get("is_correct"), False)
+
+    def test_plus_minus_all_responses_correct(self):
+        response = "x**2 - y**2"
+        answer = "plus_minus x**2 + minus_plus y**2"
+        params = {"multiple_answers_criteria": "all_responses"}
+
+        result = evaluation_function(response, answer, params)
+
+        self.assertEqual(result.get("is_correct"), True)
+
+    def test_plus_minus_all_responses_incorrect(self):
+        response = "-x**2 - y**2"
+        answer = "plus_minus x**2 + minus_plus y**2"
+        params = {"multiple_answers_criteria": "all_responses"}
+
+        result = evaluation_function(response, answer, params)
+
+        self.assertEqual(result.get("is_correct"), False)
+
+    def test_plus_minus_all_answers_correct(self):
+        response = "-x**2"
+        answer = "plus_minus minus_plus x**2"
+        params = {"multiple_answers_criteria": "all_responses"}
+
+        result = evaluation_function(response, answer, params)
+
+        self.assertEqual(result.get("is_correct"), True)
+
+    def test_plus_minus_all_answers_incorrect(self):
+        response = "x**2"
+        answer = "plus_minus minus_plus x**2"
+        params = {"multiple_answers_criteria": "all_responses"}
+
+        result = evaluation_function(response, answer, params)
+
+        self.assertEqual(result.get("is_correct"), False)
+
     def test_simplified_in_correct_response(self):
         response = "a*x + b"
         answer = "b + a*x"
@@ -194,7 +257,6 @@ class TestEvaluationFunction(unittest.TestCase):
 
         res = evaluation_function(response, answer, {})
         self.assertIn("response_simplified", res)
-
 
 if __name__ == "__main__":
     unittest.main()

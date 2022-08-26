@@ -7,7 +7,7 @@ Note that `pi` is a reserved constant and cannot be used as a symbol name.
 
 ### Optional grading parameters
 
-There are four optional parameters that can be set: `complexNumbers`, `specialFunctions`, `strict_syntax` and `symbol_assumptions`.
+There are seven optional parameters that can be set: `complexNumbers`, `specialFunctions`, `strict_syntax`,  `symbol_assumptions`, `multiple_answers_criteria`, `plus_minus` and `minus_plus`.
 
 ## `complexNumbers`
 
@@ -31,6 +31,18 @@ This input parameter allows the author to set an extra assumption each symbol. E
 
 The possible assumption names can be found in this list: 
 [`SymPy Assumption Predicates`](https://docs.sympy.org/latest/guides/assumptions.html#predicates)
+
+## `multiple_answers_criteria`
+
+The $\pm$ and $\mp$ symbols can be represented in  the answer or response by `plus_minus` and `minus_plus` respectively.
+
+Answers or responses that contain $\pm$ or $\mp$ has two possible interpretations which requires further criteria for equality. The grading parameter `multiple_answers_criteria` controls this. The default setting, `all`, is that each answer must have a corresponding answer and vice versa. The setting `all_responses` check that all responses are valid answers and the setting `all_answers` checks that all answers are found among the responses.
+
+## `plus_minus` and `minus_plus`
+
+The $\pm$ and $\mp$ symbols can be represented in  the answer or response by `plus_minus` and `minus_plus` respectively.
+
+To use other symbols for $\pm$ and $\mp$ set the grading parameters `plus_minus` and `minus_plus` to the desired symbol. **Remark:** symbol replacement is brittle and can have unintended consequences.
 
 ## Outputs
 Outputs to the `eval` command will feature:
