@@ -58,23 +58,23 @@ def evaluation_function(response, answer, params) -> dict:
         "E": E
     }
 
-    if "symbol_properties" in params.keys():
-        symbol_properties_strings = params["symbol_properties"]
-        symbol_properties = []
-        index = symbol_properties_strings.find("(")
+    if "symbol_assumptions" in params.keys():
+        symbol_assumptions_strings = params["symbol_assumptions"]
+        symbol_assumptions = []
+        index = symbol_assumptions_strings.find("(")
         while index > -1:
-            index_match = find_matching_parenthesis(symbol_properties_strings,index)
+            index_match = find_matching_parenthesis(symbol_assumptions_strings,index)
             try:
-                symbol_property = eval(symbol_properties_strings[index+1:index_match])
-                symbol_properties.append(symbol_property)
+                symbol_assumption = eval(symbol_assumptions_strings[index+1:index_match])
+                symbol_assumptions.append(symbol_assumption)
             except (SyntaxError, TypeError) as e:
-                raise Exception("List of symbol properties not written correctly.")
-            index = symbol_properties_strings.find('(',index_match+1)
-        for sym, prop in symbol_properties:
+                raise Exception("List of symbol assumptions not written correctly.")
+            index = symbol_assumptions_strings.find('(',index_match+1)
+        for sym, ass in symbol_assumptions:
             try:
-                symbol_dict.update({sym: eval("Symbol('"+sym+"',"+prop+"=True)")})
+                symbol_dict.update({sym: eval("Symbol('"+sym+"',"+ass+"=True)")})
             except Exception as e:
-               raise Exception(f"Property {prop} for symbol {sym} caused a problem.")
+               raise Exception(f"Assumption {ass} for symbol {sym} caused a problem.")
 
     # Dealing with special cases that aren't accepted by SymPy
     response, answer = Absolute(response, answer)
@@ -126,15 +126,6 @@ def evaluation_function(response, answer, params) -> dict:
         return {
             "is_correct": True,
             "level": "3",
-            "response_simplified": str(ans),
-            **interp
-        }
-
-    is_correct = bool((res.radsimp() - ans.radsimp()).simplify() == 0)
-    if is_correct:
-        return {
-            "is_correct": True,
-            "level": "4",
             "response_simplified": str(ans),
             **interp
         }

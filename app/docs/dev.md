@@ -3,14 +3,34 @@ Evaluates the equality between two symbolic expressions using the python [`SymPy
 
 Note that `pi` is a reserved constant and cannot be used as a symbol name.
 
-This function allows omitting `*` and using `^` instead of `**` if the grading parameter `strict_syntax` is set to false. In this case it is also recommended to list any multicharacter symbols (that are not part of the default list of SI units) expected to appear in the response as input symbols.
-
 ## Inputs
 
 ### Optional grading parameters
+
+There are four optional parameters that can be set: `complexNumbers`, `specialFunctions`, `strict_syntax` and `symbol_assumptions`.
+
+## `complexNumbers`
+
 If you want to use `I` for the imaginary constant, set the grading parameter `complexNumbers` to True.
 
+## `specialFunctions`
+
 If you want to use the special functions `beta` (Euler Beta function), `gamma` (Gamma function) and `zeta` (Riemann Zeta function), set the grading parameter `specialFunctions` to True.
+
+## `strict_syntax`
+
+If `strict_syntax` is set to true then the answer and response must have `*` or `/` between each part of the expressions and exponentiation must be done using `**`, e.g. `10*x*y/z**2` is accepted but `10xy/z^2` is not.
+
+If `strict_syntax` is set to false, then `*` can be omitted and `^` used instead of `**`. In this case it is also recommended to list any multicharacter symbols expected to appear in the response as input symbols.
+
+By default `strict_syntax` is set to true.
+
+## `symbol_assumptions`
+
+This input parameter allows the author to set an extra assumption each symbol. Each assumption should be written on the form `('symbol','assumption name')` and all pairs concatenated into a single string.
+
+The possible assumption names can be found in this list: 
+[`SymPy Assumption Predicates`](https://docs.sympy.org/latest/guides/assumptions.html#predicates)
 
 ## Outputs
 Outputs to the `eval` command will feature:
