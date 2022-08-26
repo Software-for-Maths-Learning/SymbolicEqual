@@ -248,5 +248,37 @@ class TestEvaluationFunction(unittest.TestCase):
         res = evaluation_function(response, answer, {})
         self.assertIn("response_simplified", res)
 
+    def test_equality_sign_in_answer_and_response_correct(self):
+        response = "2*x**2 = 10*y**2+14"
+        answer = "x**2-5*y**2-7=0"
+        params = {"strict_syntax": False}
+
+        self.assertEqual_input_variations(response, answer, params, True)
+
+    def test_equality_sign_in_answer_and_response_incorrect(self):
+        response = "2*x**2 = 10*y**2+20"
+        answer = "x**2-5*y**2-7=0"
+        params = {"strict_syntax": False}
+
+        self.assertEqual_input_variations(response, answer, params, False)
+
+    def test_equality_sign_in_answer_not_response(self):
+        response = "2*x**2-10*y**2-14"
+        answer = "x**2-5*y**2-7=0"
+        params = {"strict_syntax": False}
+
+        result = evaluation_function(response, answer, params)
+        self.assertEqual(result["is_correct"], False)
+        self.assertEqual(result["feedback"], "The response was an expression but was expected to be an equality.")
+
+    def test_equality_sign_in_response_not_answer(self):
+        response = "2*x**2 = 10*y**2+14"
+        answer = "x**2-5*y**2-7"
+        params = {"strict_syntax": False}
+
+        result = evaluation_function(response, answer, params)
+        self.assertEqual(result["is_correct"], False)
+        self.assertEqual(result["feedback"], "The response was an equality but was expected to be an expression.")
+
 if __name__ == "__main__":
     unittest.main()
