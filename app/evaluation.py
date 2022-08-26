@@ -6,7 +6,7 @@ def evaluation_function(response, answer, params) -> dict:
     """
     Function used to symbolically compare two expressions.
     """
-
+    
     # This code handles the plus_minus and minus_plus operators
     # actual symbolic comparison is done in check_equality
     if "multiple_answers_criteria" not in params.keys():
