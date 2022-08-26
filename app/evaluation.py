@@ -1,3 +1,6 @@
+from sympy.parsing.sympy_parser import T as parser_transformations
+from sympy.parsing.sympy_parser import parse_expr, split_symbols_custom
+
 def evaluation_function(response, answer, params) -> dict:
 
     """
@@ -87,6 +90,7 @@ def RecpTrig(res, ans):
         ans = ans.rewrite(sin)
     return res, ans
 
+
 def Decimals(res, ans):
     """
     Decimals -> Turn into rational form
@@ -114,6 +118,7 @@ def Decimals(res, ans):
     res = nsimplify(res)
     ans = nsimplify(ans)
     return res, ans
+
 
 def Absolute(res, ans):
     """
@@ -149,9 +154,13 @@ def Absolute(res, ans):
     n_ans = ans.count('|')
     n_res = res.count('|')
     if n_ans > 2:
-        raise SyntaxWarning("Notation in answer might be ambiguous, use Abs() instead of ||","tooMany|InAnswer")
+        raise SyntaxWarning(
+            "Notation in answer might be ambiguous, use Abs() instead of ||",
+            "tooMany|InAnswer")
     if n_res > 2:
-        raise SyntaxWarning("Notation might be ambiguous, use Abs() instead of ||","tooMany|InResponse")
+        raise SyntaxWarning(
+            "Notation might be ambiguous, use Abs() instead of ||",
+            "tooMany|InResponse")
 
     # positions of the || values
     abs_pos = [pos for pos, char in enumerate(res) if char == '|']
@@ -159,31 +168,36 @@ def Absolute(res, ans):
     # for each set of ||
     for i in range(0, len(abs_pos), 2):
         res[abs_pos[i]] = "Abs("
-        res[abs_pos[i+1]] = ")"
+        res[abs_pos[i + 1]] = ")"
     res = "".join(res)
 
     abs_pos = [pos for pos, char in enumerate(ans) if char == '|']
     ans = list(ans)
     for i in range(0, len(abs_pos), 2):
         ans[abs_pos[i]] = "Abs("
-        ans[abs_pos[i+1]] = ")"
+        ans[abs_pos[i + 1]] = ")"
     ans = "".join(ans)
 
     return res, ans
 
 def check_equality(response, answer, params) -> dict:
 
-    from sympy.parsing.sympy_parser import parse_expr
-    from sympy import expand, simplify, trigsimp, latex, Symbol
+    from sympy import expand, simplify, trigsimp, radsimp, latex, Symbol
     from sympy import pi
 
-    if params.get("specialFunctions",False) == True:
+    do_transformations = not params.get("strict_syntax",True)
+
+    unsplittable_symbols = tuple()
+    if "input_symbols" in params.keys():
+        unsplittable_symbols += tuple(x[0] for x in params["input_symbols"])
+
+    if params.get("specialFunctions", False) == True:
         from sympy import beta, gamma, zeta
     else:
         beta = Symbol("beta")
         gamma = Symbol("gamma")
         zeta = Symbol("zeta")
-    if params.get("complexNumbers",False) == True:
+    if params.get("complexNumbers", False) == True:
         from sympy import I
     else:
         I = Symbol("I")
@@ -192,42 +206,107 @@ def check_equality(response, answer, params) -> dict:
     O = Symbol("O")
     Q = Symbol("Q")
     S = Symbol("S")
-    symbol_dict = {"beta": beta,"gamma": gamma, "zeta": zeta, "I": I, "N": N, "O": O, "Q": Q, "S": S, "E": E}
+    symbol_dict = {
+        "beta": beta,
+        "gamma": gamma,
+        "zeta": zeta,
+        "I": I,
+        "N": N,
+        "O": O,
+        "Q": Q,
+        "S": S,
+        "E": E
+    }
+
+    if "symbol_assumptions" in params.keys():
+        symbol_assumptions_strings = params["symbol_assumptions"]
+        symbol_assumptions = []
+        index = symbol_assumptions_strings.find("(")
+        while index > -1:
+            index_match = find_matching_parenthesis(symbol_assumptions_strings,index)
+            try:
+                symbol_assumption = eval(symbol_assumptions_strings[index+1:index_match])
+                symbol_assumptions.append(symbol_assumption)
+            except (SyntaxError, TypeError) as e:
+                raise Exception("List of symbol assumptions not written correctly.")
+            index = symbol_assumptions_strings.find('(',index_match+1)
+        for sym, ass in symbol_assumptions:
+            try:
+                symbol_dict.update({sym: eval("Symbol('"+sym+"',"+ass+"=True)")})
+            except Exception as e:
+               raise Exception(f"Assumption {ass} for symbol {sym} caused a problem.")
 
     # Dealing with special cases that aren't accepted by SymPy
     response, answer = Absolute(response, answer)
 
     # Safely try to parse answer and response into symbolic expressions
     try:
-        res = parse_expr(response, local_dict = symbol_dict)
+        res = ParseExpression(response, do_transformations, unsplittable_symbols, local_dict=symbol_dict)
     except (SyntaxError, TypeError) as e:
         raise Exception("SymPy was unable to parse the response") from e
 
     try:
-        ans = parse_expr(answer, local_dict = symbol_dict)
+        ans = ParseExpression(answer, do_transformations, unsplittable_symbols, local_dict=symbol_dict)
     except (SyntaxError, TypeError) as e:
         raise Exception("SymPy was unable to parse the answer") from e
 
     # Add how res was interpreted to the response
     interp = {"response_latex": latex(res)}
-    
+
     # Dealing with special cases
     res, ans = RecpTrig(res, ans)
     res, ans = Decimals(res, ans)
 
     # Going from the simplest to complex tranformations available in sympy, check equality
     # https://github.com/sympy/sympy/wiki/Faq#why-does-sympy-say-that-two-equal-expressions-are-unequal
-    is_correct = bool(res.expand() == ans.expand())
+    res = res.expand()
+    is_correct = bool(res == ans.expand())
     if is_correct:
-        return {"is_correct": True, "level": "1", **interp}
+        return {
+            "is_correct": True,
+            "level": "1",
+            "response_simplified": str(ans),
+            **interp
+        }
 
-    is_correct = bool(res.simplify() == ans.simplify())
+    res = res.simplify()
+    is_correct = bool(res == ans.simplify())
     if is_correct:
-        return {"is_correct": True, "level": "2", **interp}
+        return {
+            "is_correct": True,
+            "level": "2",
+            "response_simplified": str(ans),
+            **interp
+        }
 
     # Looks for trig identities
+    res = res.trigsimp()
     is_correct = bool(res.trigsimp() == ans.trigsimp())
     if is_correct:
-        return {"is_correct": True, "level": "3", **interp}
+        return {
+            "is_correct": True,
+            "level": "3",
+            "response_simplified": str(ans),
+            **interp
+        }
 
-    return {"is_correct": False, **interp}
+    return {"is_correct": False, "response_simplified": str(res), **interp}
+
+def ParseExpression(expr, do_transformations, unsplittable_symbols, local_dict = None):
+    if do_transformations:
+        transformations = parser_transformations[0:4,6]+(split_symbols_custom(lambda x: x not in unsplittable_symbols),)+parser_transformations[8]
+    else:
+        transformations = parser_transformations[0:4]
+    return parse_expr(expr,transformations=transformations,local_dict=local_dict)
+
+def find_matching_parenthesis(string,index):
+    depth = 0
+    for k in range(index,len(string)):
+        if string[k] == '(':
+            depth += 1
+            continue
+        if string[k] == ')':
+            depth += -1
+            if depth == 0:
+                return k
+    return -1
