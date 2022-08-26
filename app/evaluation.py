@@ -259,7 +259,7 @@ def check_equality(response, answer, params) -> dict:
     if (not isinstance(res,Equality)) and isinstance(ans,Equality):
         return {
             "is_correct": False,
-            "feedback": "The response was an expression but was expected to be an equality."
+            "feedback": "The response was an expression but was expected to be an equality.",
             "response_simplified": str(ans),
             **interp
         }
@@ -268,14 +268,14 @@ def check_equality(response, answer, params) -> dict:
     if isinstance(res,Equality) and (not isinstance(ans,Equality)):
         return {
             "is_correct": False,
-            "feedback": "The response was an equality but was expected to be an expression."
+            "feedback": "The response was an equality but was expected to be an expression.",
             "response_simplified": str(ans),
             **interp
         }
         return
 
     if isinstance(res,Equality) and isinstance(ans,Equality):
-        is_correct = ((res.args[0]-res.args[1])/(res.args[0]-res.args[1])).simplify().is_constant()
+        is_correct = ((res.args[0]-res.args[1])/(ans.args[0]-ans.args[1])).simplify().is_constant()
         return {
             "is_correct": is_correct,
             "response_simplified": str(ans),
