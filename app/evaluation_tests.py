@@ -50,7 +50,7 @@ class TestEvaluationFunction(unittest.TestCase):
         self.assertEqual_input_variations(response, answer, params, True)
 
     def test_simple_polynomial_with_input_symbols_correct(self):
-        response = "3*longName**2 + 3*longName +  5"
+        response = "3*longName**2 + 3*longName + 5"
         answer = "2+3+longName+2*longName + 3*longName * longName"
         params = {"strict_syntax": False, "input_symbols": [["longName",[]]]}
 
@@ -68,6 +68,22 @@ class TestEvaluationFunction(unittest.TestCase):
         answer = "y + 1"
         params = {"strict_syntax": False}
 
+        self.assertEqual_input_variations(response, answer, params, True)
+
+    def test_simple_fractional_powers_correct(self):
+        params = {"strict_syntax": False, "symbol_properties": "('g','positive') ('v','positive')"}
+        fractional_powers_res = ["sqrt(v)/sqrt(g)","v**(1/2)/g**(1/2)","v**(0.5)/g**(0.5)"]
+        fractional_powers_ans = ["sqrt(v/g)","(v/g)**(1/2)","(v/g)**(0.5)"]
+        for response in fractional_powers_ans:
+            for answer in fractional_powers_ans:
+                self.assertEqual_input_variations(response, answer, params, True)
+        fractional_powers_res = ["v**(1/5)/g**(1/5)","v**(0.2)/g**(0.2)"]
+        fractional_powers_ans = ["(v/g)**(1/5)","(v/g)**(0.2)"]
+        for response in fractional_powers_ans:
+            for answer in fractional_powers_ans:
+                self.assertEqual_input_variations(response, answer, params, True)
+        response = "v**(1/n)/g**(1/n)"
+        answer = "(v/g)**(1/n)"
         self.assertEqual_input_variations(response, answer, params, True)
 
     def test_invalid_user_expression(self):

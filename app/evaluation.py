@@ -22,7 +22,7 @@ def evaluation_function(response, answer, params) -> dict:
     to output the grading response.
     """
 
-    from sympy import expand, simplify, trigsimp, latex, Symbol
+    from sympy import expand, simplify, trigsimp, radsimp, latex, Symbol
     from sympy import pi
 
     do_transformations = not params.get("strict_syntax",True)
@@ -57,6 +57,24 @@ def evaluation_function(response, answer, params) -> dict:
         "S": S,
         "E": E
     }
+
+    if "symbol_properties" in params.keys():
+        symbol_properties_strings = params["symbol_properties"]
+        symbol_properties = []
+        index = symbol_properties_strings.find("(")
+        while index > -1:
+            index_match = find_matching_parenthesis(symbol_properties_strings,index)
+            try:
+                symbol_property = eval(symbol_properties_strings[index+1:index_match])
+                symbol_properties.append(symbol_property)
+            except (SyntaxError, TypeError) as e:
+                raise Exception("List of symbol properties not written correctly.")
+            index = symbol_properties_strings.find('(',index_match+1)
+        for sym, prop in symbol_properties:
+            try:
+                symbol_dict.update({sym: eval("Symbol('"+sym+"',"+prop+"=True)")})
+            except Exception as e:
+               raise Exception(f"Property {prop} for symbol {sym} caused a problem.")
 
     # Dealing with special cases that aren't accepted by SymPy
     response, answer = Absolute(response, answer)
@@ -108,6 +126,15 @@ def evaluation_function(response, answer, params) -> dict:
         return {
             "is_correct": True,
             "level": "3",
+            "response_simplified": str(ans),
+            **interp
+        }
+
+    is_correct = bool((res.radsimp() - ans.radsimp()).simplify() == 0)
+    if is_correct:
+        return {
+            "is_correct": True,
+            "level": "4",
             "response_simplified": str(ans),
             **interp
         }
@@ -241,3 +268,15 @@ def ParseExpression(expr, do_transformations, unsplittable_symbols, local_dict =
     else:
         transformations = parser_transformations[0:4]
     return parse_expr(expr,transformations=transformations,local_dict=local_dict)
+
+def find_matching_parenthesis(string,index):
+    depth = 0
+    for k in range(index,len(string)):
+        if string[k] == '(':
+            depth += 1
+            continue
+        if string[k] == ')':
+            depth += -1
+            if depth == 0:
+                return k
+    return -1
