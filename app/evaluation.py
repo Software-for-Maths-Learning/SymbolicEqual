@@ -327,7 +327,7 @@ def check_equality(response, answer, params) -> dict:
             **interp
         }
 
-    return {"is_correct": False, "answer_simplified": str(ans.simplify()), "response_simplified": str(res), **interp}
+    return {"is_correct": False, "answer_simplified": str(ans.simplify()), "x_ass": symbol_dict.get("x",Symbol('x',positive=True)).is_positive, "response_simplified": str(res), **interp}
 
 def ParseExpression(expr, do_transformations, unsplittable_symbols, local_dict = None):
     if do_transformations:
