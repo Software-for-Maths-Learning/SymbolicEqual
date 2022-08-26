@@ -299,7 +299,7 @@ def check_equality(response, answer, params) -> dict:
             **interp
         }
 
-    return {"is_correct": False, "response_simplified": str(res), **interp}
+    return {"is_correct": False, "answer_simplified": str(ans) "response_simplified": str(res), **interp}
 
 def ParseExpression(expr, do_transformations, unsplittable_symbols, local_dict = None):
     if do_transformations:

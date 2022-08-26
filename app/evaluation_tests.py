@@ -71,10 +71,12 @@ class TestEvaluationFunction(unittest.TestCase):
         self.assertEqual_input_variations(response, answer, params, True)
 
     def test_complicated_expression_correct(self):
+        params = {"strict_syntax": False, "symbol_assumptions": "('x','positive')"}
         response = "1/( ((x+1)**2) * ( sqrt(1-(x/(x+1))**2) ) )"
         answer = "1/((x+1)*(sqrt(2x+1)))"
-        params = {"strict_syntax": False, "symbol_assumptions": "('x','positive')"}
-
+        self.assertEqual_input_variations(response, answer, params, True)
+        answer = "1/( ((x+1)**2) * ( sqrt(1-(x/(x+1))**2) ) )"
+        response = "1/((x+1)*(sqrt(2x+1)))"
         self.assertEqual_input_variations(response, answer, params, True)
 
     def test_simple_fractional_powers_correct(self):
