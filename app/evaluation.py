@@ -292,6 +292,16 @@ def check_equality(response, answer, params) -> dict:
             **interp
         }
 
+    # General catch-all if above does not work
+    is_correct = bool((res.simplify() - ans.simplify()).simplify() == 0)
+    if is_correct:
+        return {
+            "is_correct": True,
+            "level": "4",
+            "response_simplified": str(ans),
+            **interp
+        }
+
     return {"is_correct": False, "response_simplified": str(res), **interp}
 
 def ParseExpression(expr, do_transformations, unsplittable_symbols, local_dict = None):
