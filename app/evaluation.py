@@ -266,7 +266,7 @@ def check_equality(response, answer, params) -> dict:
         return {
             "is_correct": True,
             "level": "1",
-            "response_simplified": str(ans),
+            "response_simplified": str(res.simplify()),
             **interp
         }
 
@@ -275,7 +275,7 @@ def check_equality(response, answer, params) -> dict:
         return {
             "is_correct": True,
             "level": "2",
-            "response_simplified": str(ans),
+            "response_simplified": str(res.simplify()),
             **interp
         }
 
@@ -285,7 +285,7 @@ def check_equality(response, answer, params) -> dict:
         return {
             "is_correct": True,
             "level": "3",
-            "response_simplified": str(ans),
+            "response_simplified": str(res.simplify()),
             **interp
         }
 
@@ -295,7 +295,7 @@ def check_equality(response, answer, params) -> dict:
         return {
             "is_correct": True,
             "level": "4",
-            "response_simplified": str(ans),
+            "response_simplified": str(res.simplify()),
             **interp
         }
 
