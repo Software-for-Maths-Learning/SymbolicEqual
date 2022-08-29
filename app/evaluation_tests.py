@@ -75,8 +75,8 @@ class TestEvaluationFunction(unittest.TestCase):
         response = "1/( ((x+1)**2) * ( sqrt(1-(x/(x+1))**2) ) )"
         answer = "1/((x+1)*(sqrt(2x+1)))"
         self.assertEqual_input_variations(response, answer, params, True)
-        answer = "1/( ((x+1)**2) * ( sqrt(1-(x/(x+1))**2) ) )"
         response = "1/((x+1)*(sqrt(2x+1)))"
+        answer = "1/( ((x+1)**2) * ( sqrt(1-(x/(x+1))**2) ) )"
         self.assertEqual_input_variations(response, answer, params, True)
 
     def test_simple_fractional_powers_correct(self):
