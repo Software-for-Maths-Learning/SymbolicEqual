@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - main
   workflow_dispatch:
 
 jobs:
@@ -106,7 +107,7 @@ jobs:
       - name: deploy evaluation function
         id: deploy-evaluation-function
         env:
-          BACKEND_API_URL: https://hytqbudf4a.eu-west-1.awsapprunner.com
+          BACKEND_API_URL: https://staging-api.lambdafeedback.com
           API_KEY: ${{ secrets.FUNCTION_ADMIN_API_KEY }}
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ steps.set_function_name.outputs.function_name }}
@@ -175,7 +176,7 @@ jobs:
       - name: deploy evaluation function
         id: deploy-evaluation-function
         env:
-          BACKEND_API_URL: https://vnfapgr7gv.eu-west-1.awsapprunner.com
+          BACKEND_API_URL: https://prod-api.lambdafeedback.com
           API_KEY: ${{ secrets.FUNCTION_ADMIN_API_KEY }}
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ steps.set_function_name.outputs.function_name }}
