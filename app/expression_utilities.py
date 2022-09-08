@@ -103,7 +103,6 @@ def create_sympy_parsing_params(params, unsplittable_symbols=tuple()):
 
     if params.get("specialFunctions", False) == True:
         from sympy import beta, gamma, zeta
-        #unsplittable_symbols += ("beta", "gamma", "zeta")
     else:
         beta = Symbol("beta")
         gamma = Symbol("gamma")
