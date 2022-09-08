@@ -2,6 +2,11 @@ from sympy.parsing.sympy_parser import T as parser_transformations
 from sympy.parsing.sympy_parser import parse_expr, split_symbols_custom
 from sympy import Equality
 
+try:
+    from .expression_utilities import preprocess_expression, parse_expression, create_sympy_parsing_params, substitute
+except ImportError:
+    from expression_utilities import preprocess_expression, parse_expression, create_sympy_parsing_params, substitute
+
 def evaluation_function(response, answer, params) -> dict:
 
     """
@@ -186,40 +191,11 @@ def check_equality(response, answer, params) -> dict:
     from sympy import expand, simplify, trigsimp, radsimp, latex, Symbol
     from sympy import pi
 
-    do_transformations = not params.get("strict_syntax",True)
-
     unsplittable_symbols = tuple()+(params.get("plus_minus","plus_minus"),params.get("minus_plus","minus_plus"))
 
-    if "input_symbols" in params.keys():
-        unsplittable_symbols += tuple(x[0] for x in params["input_symbols"])
-
-    if params.get("specialFunctions", False) == True:
-        from sympy import beta, gamma, zeta
-        unsplittable_symbols += ("beta", "gamma", "zeta")
-    else:
-        beta = Symbol("beta")
-        gamma = Symbol("gamma")
-        zeta = Symbol("zeta")
-    if params.get("complexNumbers", False) == True:
-        from sympy import I
-    else:
-        I = Symbol("I")
-    E = Symbol("E")
-    N = Symbol("N")
-    O = Symbol("O")
-    Q = Symbol("Q")
-    S = Symbol("S")
-    symbol_dict = {
-        "beta": beta,
-        "gamma": gamma,
-        "zeta": zeta,
-        "I": I,
-        "N": N,
-        "O": O,
-        "Q": Q,
-        "S": S,
-        "E": E
-    }
+    answer, response = preprocess_expression([answer, response],params)
+    parsing_params = create_sympy_parsing_params(params, unsplittable_symbols=unsplittable_symbols)
+    parsing_params["extra_transformations"] = parser_transformations[9] # Add conversion of equal signs
 
     if "symbol_assumptions" in params.keys():
         symbol_assumptions_strings = params["symbol_assumptions"]
@@ -235,7 +211,7 @@ def check_equality(response, answer, params) -> dict:
             index = symbol_assumptions_strings.find('(',index_match+1)
         for sym, ass in symbol_assumptions:
             try:
-                symbol_dict.update({sym: eval("Symbol('"+sym+"',"+ass+"=True)")})
+                parsing_params["symbol_dict"].update({sym: eval("Symbol('"+sym+"',"+ass+"=True)")})
             except Exception as e:
                raise Exception(f"Assumption {ass} for symbol {sym} caused a problem.")
 
@@ -244,12 +220,12 @@ def check_equality(response, answer, params) -> dict:
 
     # Safely try to parse answer and response into symbolic expressions
     try:
-        res = ParseExpression(response, do_transformations, unsplittable_symbols, local_dict=symbol_dict)
+        res = parse_expression(response, parsing_params)
     except (SyntaxError, TypeError) as e:
         raise Exception("SymPy was unable to parse the response") from e
 
     try:
-        ans = ParseExpression(answer, do_transformations, unsplittable_symbols, local_dict=symbol_dict)
+        ans = parse_expression(answer, parsing_params)
     except (SyntaxError, TypeError) as e:
         raise Exception("SymPy was unable to parse the answer") from e
 
@@ -328,13 +304,6 @@ def check_equality(response, answer, params) -> dict:
         }
 
     return {"is_correct": False, "response_simplified": str(res), **interp}
-
-def ParseExpression(expr, do_transformations, unsplittable_symbols, local_dict = None):
-    if do_transformations:
-        transformations = parser_transformations[0:4,6,9]+(split_symbols_custom(lambda x: x not in unsplittable_symbols),)+parser_transformations[8]
-    else:
-        transformations = parser_transformations[0:4,9]
-    return parse_expr(expr,transformations=transformations,local_dict=local_dict)
 
 def find_matching_parenthesis(string,index):
     depth = 0
