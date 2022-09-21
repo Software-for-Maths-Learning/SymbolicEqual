@@ -16,6 +16,7 @@ def preprocess_expression(exprs, params):
     if "input_symbols" in params.keys():
         substitutions = []
         for input_symbol in params["input_symbols"]:
+            substitutions.append((input_symbol[0],input_symbol[0]))
             for alternative in input_symbol[1]:
                 substitutions.append((alternative,input_symbol[0]))
         substitutions.sort(key=lambda x: -len(x[0]))
