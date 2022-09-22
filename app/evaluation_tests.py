@@ -138,16 +138,30 @@ class TestEvaluationFunction(unittest.TestCase):
 
         self.assertEqual_input_variations(response, answer, params, True)
 
-    def test_nested_absolute_error(self):
+    def test_nested_absolute_response(self):
         body = {"response": "|x+|y||", "answer": "Abs(x+Abs(y))"}
+
+        result = evaluation_function(body["response"], body["answer"], {})
+
+        self.assertEqual("Notation in answer might be ambiguous, use Abs(.) instead of |.|" in result["feedback"], True)
+
+    def test_many_absolute_error_response(self):
+        body = {"response": "|x|+|y|", "answer": "Abs(x)+Abs(y)"}
+
+        result = evaluation_function(body["response"], body["answer"], {})
+
+        self.assertEqual("Notation in answer might be ambiguous, use Abs(.) instead of |.|" in result["feedback"], True)
+
+    def test_many_absolute_error_answer(self):
+        body = {"response": "Abs(x)+Abs(y)", "answer": "|x|+|y|"}
 
         with self.assertRaises(SyntaxWarning) as cm:
             evaluation_function(body["response"], body["answer"], {})
 
-        self.assertEqual(cm.exception.args[1] == "tooMany|InResponse", True)
+        self.assertEqual(cm.exception.args[1] == "tooMany|InAnswer", True)
 
-    def test_many_absolute_error(self):
-        body = {"response": "Abs(x)+Abs(y)", "answer": "|x|+|y|"}
+    def test_nested_absolute_error_answer(self):
+        body = {"response": "|x+|y||", "answer": "|x+|y||"}
 
         with self.assertRaises(SyntaxWarning) as cm:
             evaluation_function(body["response"], body["answer"], {})
