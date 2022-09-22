@@ -157,16 +157,15 @@ def Absolute(res, ans):
     """
     # Response
 
+    ambiguity_warning = "Notation in answer might be ambiguous, use Abs(.) instead of |.|"
+
+    remark = ""
     n_ans = ans.count('|')
     n_res = res.count('|')
     if n_ans > 2:
-        raise SyntaxWarning(
-            "Notation in answer might be ambiguous, use Abs() instead of ||",
-            "tooMany|InAnswer")
+        raise SyntaxWarning(ambiguity_warning,"tooMany|InAnswer")
     if n_res > 2:
-        raise SyntaxWarning(
-            "Notation might be ambiguous, use Abs() instead of ||",
-            "tooMany|InResponse")
+        remark = "\n"+ambiguity_warning
 
     # positions of the || values
     abs_pos = [pos for pos, char in enumerate(res) if char == '|']
@@ -184,7 +183,7 @@ def Absolute(res, ans):
         ans[abs_pos[i + 1]] = ")"
     ans = "".join(ans)
 
-    return res, ans
+    return res, ans, remark
 
 def check_equality(response, answer, params) -> dict:
 
@@ -216,13 +215,16 @@ def check_equality(response, answer, params) -> dict:
                raise Exception(f"Assumption {ass} for symbol {sym} caused a problem.")
 
     # Dealing with special cases that aren't accepted by SymPy
-    response, answer = Absolute(response, answer)
+    response, answer, remark = Absolute(response, answer)
 
     # Safely try to parse answer and response into symbolic expressions
     try:
         res = parse_expression(response, parsing_params)
     except (SyntaxError, TypeError) as e:
-        raise Exception("SymPy was unable to parse the response") from e
+        if remark != "":
+            return {"is_correct": False, "feedback": "The evaluation function could not parse your response"+remark}
+        else:
+            raise Exception("SymPy was unable to parse the answer") from e
 
     try:
         ans = parse_expression(answer, parsing_params)
@@ -235,7 +237,7 @@ def check_equality(response, answer, params) -> dict:
     if (not isinstance(res,Equality)) and isinstance(ans,Equality):
         return {
             "is_correct": False,
-            "feedback": "The response was an expression but was expected to be an equality.",
+            "feedback": "The response was an expression but was expected to be an equality."+remark,
             "response_simplified": str(ans),
             **interp
         }
@@ -244,7 +246,7 @@ def check_equality(response, answer, params) -> dict:
     if isinstance(res,Equality) and (not isinstance(ans,Equality)):
         return {
             "is_correct": False,
-            "feedback": "The response was an equality but was expected to be an expression.",
+            "feedback": "The response was an equality but was expected to be an expression."+remark,
             "response_simplified": str(ans),
             **interp
         }
@@ -255,6 +257,7 @@ def check_equality(response, answer, params) -> dict:
         return {
             "is_correct": is_correct,
             "response_simplified": str(ans),
+            "feedback": remark,
             **interp
         }
         return
@@ -271,6 +274,7 @@ def check_equality(response, answer, params) -> dict:
             "is_correct": True,
             "level": "1",
             "response_simplified": str(res.simplify()),
+            "feedback": remark,
             **interp
         }
 
@@ -280,6 +284,7 @@ def check_equality(response, answer, params) -> dict:
             "is_correct": True,
             "level": "2",
             "response_simplified": str(res.simplify()),
+            "feedback": remark,
             **interp
         }
 
@@ -290,6 +295,7 @@ def check_equality(response, answer, params) -> dict:
             "is_correct": True,
             "level": "3",
             "response_simplified": str(res.simplify()),
+            "feedback": remark,
             **interp
         }
 
@@ -300,10 +306,11 @@ def check_equality(response, answer, params) -> dict:
             "is_correct": True,
             "level": "4",
             "response_simplified": str(res.simplify()),
+            "feedback": remark,
             **interp
         }
 
-    return {"is_correct": False, "response_simplified": str(res), **interp}
+    return {"is_correct": False, "response_simplified": str(res), "feedback": remark, **interp}
 
 def find_matching_parenthesis(string,index):
     depth = 0
