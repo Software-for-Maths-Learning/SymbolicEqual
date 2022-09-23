@@ -273,7 +273,7 @@ def check_equality(response, answer, params) -> dict:
         res = parse_expression(response, parsing_params)
     except (SyntaxError, TypeError) as e:
         if remark != "":
-            return {"is_correct": False, "feedback": "The evaluation function could not parse your response"+remark}
+            return {"is_correct": False, "feedback": "The evaluation function could not parse your response."+remark}
         else:
             raise Exception("SymPy was unable to parse the answer.") from e
 
@@ -325,7 +325,7 @@ def check_equality(response, answer, params) -> dict:
             "is_correct": True,
             "level": "1",
             "response_simplified": str(res.simplify()),
-            "feedback": remark,
+            "feedback": "Correct."+remark,
             **interp
         }
 
@@ -335,7 +335,7 @@ def check_equality(response, answer, params) -> dict:
             "is_correct": True,
             "level": "2",
             "response_simplified": str(res.simplify()),
-            "feedback": remark,
+            "feedback": "Correct."+remark,
             **interp
         }
 
@@ -346,7 +346,7 @@ def check_equality(response, answer, params) -> dict:
             "is_correct": True,
             "level": "3",
             "response_simplified": str(res.simplify()),
-            "feedback": remark,
+            "feedback": "Correct."+remark,
             **interp
         }
 
@@ -357,7 +357,7 @@ def check_equality(response, answer, params) -> dict:
             "is_correct": True,
             "level": "4",
             "response_simplified": str(res.simplify()),
-            "feedback": remark,
+            "feedback": "Correct."+remark,
             **interp
         }
 
