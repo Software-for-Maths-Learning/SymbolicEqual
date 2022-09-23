@@ -163,7 +163,7 @@ def Absolute(res, ans):
         res[res.index("|")] = "Abs("
         res[res.index("|")] = ")"
         res = "".join(res)
-    else:
+    elif n_res > 0:
         res_start_abs_pos = []
         res_end_abs_pos = []
         res_ambiguous_abs_pos = []
@@ -185,6 +185,13 @@ def Absolute(res, ans):
             res[i] = "Abs("
         for i in res_end_abs_pos:
             res[i] = ")"
+        k = 0
+        for i in res_ambiguous_abs_pos:
+            if k % 2 == 0:
+                res[i] = "Abs("
+            if k % 2 == 1:
+                res[i] = ")"
+            k += 1
         res = "".join(res)
 
     n_ans = ans.count('|')
@@ -193,7 +200,7 @@ def Absolute(res, ans):
         ans[ans.index("|")] = "Abs("
         ans[ans.index("|")] = ")"
         ans = "".join(ans)
-    else:
+    elif n_ans > 0:
         ans_start_abs_pos = []
         ans_end_abs_pos = []
         ans_ambiguous_abs_pos = []

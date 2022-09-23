@@ -139,12 +139,12 @@ class TestEvaluationFunction(unittest.TestCase):
         self.assertEqual_input_variations(response, answer, params, True)
 
     def test_absolute_ambiguity(self):
-        response = "a|x|+y"
-        answer = "a*Abs(x)+y"
+        response = "a|x|+|y|"
+        answer = "a*Abs(x)+Abs(y)"
         params = {"strict_syntax": False}
 
         result = evaluation_function(response, answer, params)
-        self.assertEqual(result["is_correct"], False)
+        self.assertEqual("Notation in answer might be ambiguous, use Abs(.) instead of |.|" in result["feedback"], True)
 
     def test_nested_absolute_response(self):
         response = "|x+|y||"
