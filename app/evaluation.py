@@ -151,37 +151,81 @@ def Absolute(res, ans):
     Tests
     -----
     Checks if Abs(x)+y = |x|+y
-    Checks if giving |x+|y|| as response raises a SyntaxWarning
-    Checks if giving |x|+|y| as answer raises a SyntaxWarning
+    Checks if giving |x+|y|| sends back a warning in the feedback
+    Checks if giving |x|+|y| as answer raises an Exception
 
     """
-    # Response
-
-    ambiguity_warning = "Notation in answer might be ambiguous, use Abs(.) instead of |.|"
-
-    remark = ""
-    n_ans = ans.count('|')
-    n_res = res.count('|')
-    if n_ans > 2:
-        raise SyntaxWarning(ambiguity_warning,"tooMany|InAnswer")
-    if n_res > 2:
-        remark = "\n"+ambiguity_warning
 
     # positions of the || values
-    abs_pos = [pos for pos, char in enumerate(res) if char == '|']
-    res = list(res)
-    # for each set of ||
-    for i in range(0, len(abs_pos), 2):
-        res[abs_pos[i]] = "Abs("
-        res[abs_pos[i + 1]] = ")"
-    res = "".join(res)
+    n_res = res.count('|')
+    if n_res == 2:
+        res = list(res)
+        res[res.index("|")] = "Abs("
+        res[res.index("|")] = ")"
+        res = "".join(res)
+    else:
+        res_start_abs_pos = []
+        res_end_abs_pos = []
+        res_ambiguous_abs_pos = []
+        
+        if res[0] == "|":
+            res_start_abs_pos.append(0)
+        for i in range(1,len(res)-1):
+            if res[i] == "|":
+                if (res[i-1].isalnum() or res[i-1] in "()[]{}") and not (res[i+1].isalnum() or res[i+1] in "()[]{}"):
+                    res_end_abs_pos.append(i)
+                elif (res[i+1].isalnum() or res[i+1] in "()[]{}") and not (res[i-1].isalnum() or res[i-1] in "()[]{}"):
+                    res_start_abs_pos.append(i)
+                else:
+                    res_ambiguous_abs_pos.append(i)
+        if res[-1] == "|":
+            res_end_abs_pos.append(len(res)-1)
+        res = list(res)
+        for i in res_start_abs_pos:
+            res[i] = "Abs("
+        for i in res_end_abs_pos:
+            res[i] = ")"
+        res = "".join(res)
 
-    abs_pos = [pos for pos, char in enumerate(ans) if char == '|']
-    ans = list(ans)
-    for i in range(0, len(abs_pos), 2):
-        ans[abs_pos[i]] = "Abs("
-        ans[abs_pos[i + 1]] = ")"
-    ans = "".join(ans)
+    n_ans = ans.count('|')
+    if n_ans == 2:
+        ans = list(ans)
+        ans[ans.index("|")] = "Abs("
+        ans[ans.index("|")] = ")"
+        ans = "".join(ans)
+    else:
+        ans_start_abs_pos = []
+        ans_end_abs_pos = []
+        ans_ambiguous_abs_pos = []
+        
+        if ans[0] == "|":
+            ans_start_abs_pos.append(0)
+        for i in range(1,len(ans)-1):
+            if ans[i] == "|":
+                if (ans[i-1].isalnum() or ans[i-1] in "()[]{}") and not (ans[i+1].isalnum() or ans[i+1] in "()[]{}"):
+                    ans_end_abs_pos.append(i)
+                elif (ans[i+1].isalnum() or ans[i+1] in "()[]{}") and not (ans[i-1].isalnum() or ans[i-1] in "()[]{}"):
+                    ans_start_abs_pos.append(i)
+                else:
+                    ans_ambiguous_abs_pos.append(i)
+        if ans[-1] == "|":
+            ans_end_abs_pos.append(len(ans)-1)
+        ans = list(ans)
+        for i in ans_start_abs_pos:
+            ans[i] = "Abs("
+        for i in ans_end_abs_pos:
+            ans[i] = ")"
+        ans = "".join(ans)
+
+    # Response
+    ambiguity_warning_answer = "Notation in answer might be ambiguous, use Abs(.) instead of |.|"
+    ambiguity_warning_response = "Notation in answer might be ambiguous, use Abs(.) instead of |.|"
+
+    remark = ""
+    if n_ans > 2 and len(ans_ambiguous_abs_pos) > 0:
+        raise SyntaxWarning(ambiguity_warning_answer,"ambiguityWith|")
+    if n_res > 2 and len(res_ambiguous_abs_pos) > 0:
+        remark = "\n"+ambiguity_warning_response
 
     return res, ans, remark
 
@@ -224,12 +268,12 @@ def check_equality(response, answer, params) -> dict:
         if remark != "":
             return {"is_correct": False, "feedback": "The evaluation function could not parse your response"+remark}
         else:
-            raise Exception("SymPy was unable to parse the answer") from e
+            raise Exception("SymPy was unable to parse the answer.") from e
 
     try:
         ans = parse_expression(answer, parsing_params)
     except (SyntaxError, TypeError) as e:
-        raise Exception("SymPy was unable to parse the answer") from e
+        raise Exception("SymPy was unable to parse the answer."+remark,) from e
 
     # Add how res was interpreted to the response
     interp = {"response_latex": latex(res)}

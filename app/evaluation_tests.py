@@ -138,35 +138,64 @@ class TestEvaluationFunction(unittest.TestCase):
 
         self.assertEqual_input_variations(response, answer, params, True)
 
+    def test_absolute_ambiguity(self):
+        response = "a|x|+y"
+        answer = "a*Abs(x)+y"
+        params = {"strict_syntax": False}
+
+        result = evaluation_function(response, answer, params)
+        self.assertEqual(result["is_correct"], False)
+
     def test_nested_absolute_response(self):
-        body = {"response": "|x+|y||", "answer": "Abs(x+Abs(y))"}
+        response = "|x+|y||"
+        answer = "Abs(x+Abs(y))"
+        result = evaluation_function(response, answer, {})
+        self.assertEqual(result["is_correct"], True)
 
-        result = evaluation_function(body["response"], body["answer"], {})
+        response = "a*|x+b*|y||"
+        answer = "a*Abs(x+b*Abs(y))"
+        result = evaluation_function(response, answer, {})
+        self.assertEqual(result["is_correct"], True)
 
-        self.assertEqual("Notation in answer might be ambiguous, use Abs(.) instead of |.|" in result["feedback"], True)
-
-    def test_many_absolute_error_response(self):
+    def test_many_absolute_response(self):
         body = {"response": "|x|+|y|", "answer": "Abs(x)+Abs(y)"}
 
         result = evaluation_function(body["response"], body["answer"], {})
 
+        self.assertEqual(result["is_correct"], True)
+
+    def test_many_absolute_answer(self):
+        body = {"response": "|x|+|y|", "answer": "|x|+|y|"}
+
+        result = evaluation_function(body["response"], body["answer"], {})
+
+        self.assertEqual(result["is_correct"], True)
+
+    def test_nested_absolute_answer(self):
+        response = "|x+|y||"
+        answer = "|x+|y||"
+        result = evaluation_function(response, answer, {})
+        self.assertEqual(result["is_correct"], True)
+
+        response = "a*|x+b*|y||"
+        answer = "a*|x+b*|y||"
+        result = evaluation_function(response, answer, {})
+        self.assertEqual(result["is_correct"], True)
+
+    def test_absolute_ambiguity_response(self):
+        body = {"response": "|a+b|c+d|e+f|", "answer": "|a+b|*c+d*|e+f|"}
+
+        result = evaluation_function(body["response"], body["answer"], {})
+
         self.assertEqual("Notation in answer might be ambiguous, use Abs(.) instead of |.|" in result["feedback"], True)
 
-    def test_many_absolute_error_answer(self):
-        body = {"response": "Abs(x)+Abs(y)", "answer": "|x|+|y|"}
+    def test_absolute_ambiguity_answer(self):
+        body = {"response": "|a+b|*c+d*|e+f|", "answer": "|a+b|c+d|e+f|"}
 
-        with self.assertRaises(SyntaxWarning) as cm:
+        with self.assertRaises(Exception) as cm:
             evaluation_function(body["response"], body["answer"], {})
 
-        self.assertEqual(cm.exception.args[1] == "tooMany|InAnswer", True)
-
-    def test_nested_absolute_error_answer(self):
-        body = {"response": "|x+|y||", "answer": "|x+|y||"}
-
-        with self.assertRaises(SyntaxWarning) as cm:
-            evaluation_function(body["response"], body["answer"], {})
-
-        self.assertEqual(cm.exception.args[1] == "tooMany|InAnswer", True)
+        self.assertEqual(cm.exception.args[1] == "ambiguityWith|", True)
 
     def test_clashing_symbols(self):
         params = {}
