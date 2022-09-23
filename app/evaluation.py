@@ -285,6 +285,8 @@ def check_equality(response, answer, params) -> dict:
     # Add how res was interpreted to the response
     interp = {"response_latex": latex(res)}
 
+    feedback = {}
+
     if (not isinstance(res,Equality)) and isinstance(ans,Equality):
         return {
             "is_correct": False,
@@ -305,10 +307,12 @@ def check_equality(response, answer, params) -> dict:
 
     if isinstance(res,Equality) and isinstance(ans,Equality):
         is_correct = ((res.args[0]-res.args[1])/(ans.args[0]-ans.args[1])).simplify().is_constant()
+        if remark != "":
+            feedback = {"feedback": "Correct."+remark}
         return {
             "is_correct": is_correct,
             "response_simplified": str(ans),
-            "feedback": remark,
+            **feedback,
             **interp
         }
         return
@@ -321,47 +325,57 @@ def check_equality(response, answer, params) -> dict:
     # https://github.com/sympy/sympy/wiki/Faq#why-does-sympy-say-that-two-equal-expressions-are-unequal
     is_correct = bool(res.expand() == ans.expand())
     if is_correct:
+        if remark != "":
+            feedback = {"feedback": "Correct."+remark}
         return {
             "is_correct": True,
             "level": "1",
             "response_simplified": str(res.simplify()),
-            "feedback": "Correct."+remark,
+            **feedback,
             **interp
         }
 
     is_correct = bool(res.simplify() == ans.simplify())
     if is_correct:
+        if remark != "":
+            feedback = {"feedback": "Correct."+remark}
         return {
             "is_correct": True,
             "level": "2",
             "response_simplified": str(res.simplify()),
-            "feedback": "Correct."+remark,
+            **feedback,
             **interp
         }
 
     # Looks for trig identities
     is_correct = bool(res.trigsimp() == ans.trigsimp())
     if is_correct:
+        if remark != "":
+            feedback = {"feedback": "Correct."+remark}
         return {
             "is_correct": True,
             "level": "3",
             "response_simplified": str(res.simplify()),
-            "feedback": "Correct."+remark,
+            **feedback,
             **interp
         }
 
     # General catch-all if above does not work
     is_correct = bool((res.simplify() - ans.simplify()).simplify() == 0)
     if is_correct:
+        if remark != "":
+            feedback = {"feedback": "Correct."+remark}
         return {
             "is_correct": True,
             "level": "4",
             "response_simplified": str(res.simplify()),
-            "feedback": "Correct."+remark,
+            **feedback,
             **interp
         }
 
-    return {"is_correct": False, "response_simplified": str(res), "feedback": remark, **interp}
+    if remark != "":
+        feedback = {"feedback": "Incorrect."+remark}
+    return {"is_correct": False, "response_simplified": str(res), **feedback, **interp}
 
 def find_matching_parenthesis(string,index):
     depth = 0
