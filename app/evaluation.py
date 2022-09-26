@@ -188,7 +188,7 @@ def Absolute(res, ans):
         k = 0
         for i in res_ambiguous_abs_pos:
             if k % 2 == 0:
-                res[i] = "Abs("
+                res[i] = "*Abs("
             if k % 2 == 1:
                 res[i] = ")"
             k += 1
