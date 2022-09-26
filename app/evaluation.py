@@ -186,12 +186,37 @@ def Absolute(res, ans):
         for i in res_end_abs_pos:
             res[i] = ")"
         k = 0
+        prev_ambiguous = -1
         for i in res_ambiguous_abs_pos:
-            if k % 2 == 0:
-                res[i] = "*Abs("
-            if k % 2 == 1:
+            prev_start = -1
+            for j in res_start_abs_pos:
+                if j < i:
+                    prev_start = j
+                else:
+                    break
+            prev_end = -1
+            for j in res_end_abs_pos:
+                if j < i:
+                    prev_end = j
+                else:
+                    break
+            if max(prev_start,prev_end,prev_ambiguous) == prev_end:
+                if res[i-1].isalnum():
+                    res[i] = "*Abs("
+                else:
+                    res[i] = "Abs("
+            elif max(prev_start,prev_end,prev_ambiguous) == prev_ambiguous:
+                if k % 2 == 0:
+                    if res[i-1].isalnum():
+                        res[i] = "*Abs("
+                    else:
+                        res[i] = "Abs("
+                else:
+                    res[i] = ")"
+                k += 1
+            else:
                 res[i] = ")"
-            k += 1
+            prev_ambiguous = i
         res = "".join(res)
 
     n_ans = ans.count('|')
