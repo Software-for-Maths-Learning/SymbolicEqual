@@ -144,7 +144,7 @@ class TestEvaluationFunction(unittest.TestCase):
         params = {"strict_syntax": False}
 
         result = evaluation_function(response, answer, params)
-        self.assertEqual("Notation in answer might be ambiguous, use Abs(.) instead of |.|" in result["feedback"], True)
+        self.assertEqual("Notation in response might be ambiguous, use Abs(.) instead of |.|" in result["feedback"], True)
 
     def test_nested_absolute_response(self):
         response = "|x+|y||"
@@ -187,7 +187,7 @@ class TestEvaluationFunction(unittest.TestCase):
 
         result = evaluation_function(body["response"], body["answer"], {})
 
-        self.assertEqual("Notation in answer might be ambiguous, use Abs(.) instead of |.|" in result["feedback"], True)
+        self.assertEqual("Notation in response might be ambiguous, use Abs(.) instead of |.|" in result["feedback"], True)
 
     def test_absolute_ambiguity_answer(self):
         body = {"response": "|a+b|*c+d*|e+f|", "answer": "|a+b|c+d|e+f|"}
