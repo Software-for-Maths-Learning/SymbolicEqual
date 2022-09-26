@@ -144,6 +144,15 @@ class TestEvaluationFunction(unittest.TestCase):
         params = {"strict_syntax": False}
 
         result = evaluation_function(response, answer, params)
+        self.assertEqual(result["is_correct"], True)
+        self.assertEqual("Notation in response might be ambiguous, use Abs(.) instead of |.|" in result["feedback"], True)
+
+        response = "|x|a+|y|"
+        answer = "a*Abs(x)+Abs(y)"
+        params = {"strict_syntax": False}
+
+        result = evaluation_function(response, answer, params)
+        self.assertEqual(result["is_correct"], True)
         self.assertEqual("Notation in response might be ambiguous, use Abs(.) instead of |.|" in result["feedback"], True)
 
     def test_nested_absolute_response(self):
