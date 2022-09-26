@@ -226,7 +226,7 @@ def Absolute(res, ans):
 
     # Response
     ambiguity_warning_answer = "Notation in answer might be ambiguous, use Abs(.) instead of |.|"
-    ambiguity_warning_response = "Notation in answer might be ambiguous, use Abs(.) instead of |.|"
+    ambiguity_warning_response = "Notation in response might be ambiguous, use Abs(.) instead of |.|"
 
     remark = ""
     if n_ans > 2 and len(ans_ambiguous_abs_pos) > 0:
