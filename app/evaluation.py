@@ -13,9 +13,6 @@ def evaluation_function(response, answer, params) -> dict:
     Function used to symbolically compare two expressions.
     """
 
-    if response == "spew":
-        return {"is_correct": False, "feedback": response+" "+answer+" "+str(params)}
-
     # This code handles the plus_minus and minus_plus operators
     # actual symbolic comparison is done in check_equality
     if "multiple_answers_criteria" not in params.keys():
