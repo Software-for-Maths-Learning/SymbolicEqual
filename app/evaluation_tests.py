@@ -334,5 +334,9 @@ class TestEvaluationFunction(unittest.TestCase):
         self.assertEqual(result["is_correct"], False)
         self.assertEqual(result["feedback"], "The response was an equality but was expected to be an expression.")
 
+#    def test_alpha_436(self):
+#        params = {"strict_syntax": False}
+#        answer = 
+
 if __name__ == "__main__":
     unittest.main()
