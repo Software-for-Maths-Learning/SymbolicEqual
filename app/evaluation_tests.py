@@ -338,7 +338,7 @@ class TestEvaluationFunction(unittest.TestCase):
         answer = '(1+(gamma-1)/2)((-1)/(gamma-1))'
         response = '(1+(gamma-1)/2)((-1)/(gamma-1))'
         params = {'strict_syntax': False,
-                   'input_symbols': [['gamma', ['']], ['', ['M']]]
+                   'input_symbols': [['gamma', ['']], ['', ['A']], [' ', ['B']], ['C', ['  ']]]
                  }
         result = evaluation_function(response, answer, params)
         self.assertEqual(result["is_correct"], True)
