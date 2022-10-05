@@ -350,8 +350,7 @@ def check_equality(response, answer, params) -> dict:
 
     error_below_atol = False
     error_below_rtol = False
-    
-    if res.is_constant() and ans.is_constant() and params.get("numerical",False): 
+    if res.is_constant() and ans.is_constant() and ("atol" or "rtol" in params.keys()): 
 
         if "atol" in params.keys():
             error_below_atol = bool(abs(float(ans-res)) < float(params["atol"]))
