@@ -344,59 +344,60 @@ class TestEvaluationFunction(unittest.TestCase):
         self.assertEqual(result["is_correct"], True)
 
     def test_numerical_comparison(self):
+        params = {"numerical": True}
         with self.subTest(tag="Correct response, tolerance specified with atol"):
             response = "6.73"
             answer = "sqrt(3)+5"
-            params = {"atol": 0.005}
+            params.update({"atol": 0.005})
             result = evaluation_function(response, answer, params)
             self.assertEqual(result["is_correct"], True)
 
         with self.subTest(tag="Incorrect response, tolerance specified with atol"):
             response = "6.7"
             answer = "sqrt(3)+5"
-            params = {"atol": 0.005}
+            params.update({"atol": 0.005})
             result = evaluation_function(response, answer, params)
             self.assertEqual(result["is_correct"], False)
 
         with self.subTest(tag="Correct response, tolerance specified with rtol"):
             response = "6.73"
             answer = "sqrt(3)+5"
-            params = {"rtol": 0.0005}
+            params.update({"rtol": 0.0005})
             result = evaluation_function(response, answer, params)
             self.assertEqual(result["is_correct"], True)
 
         with self.subTest(tag="Incorrect response, tolerance specified with rtol"):
             response = "6.7"
             answer = "sqrt(3)+5"
-            params = {"rtol": 0.0005}
+            params.update({"rtol": 0.0005})
             result = evaluation_function(response, answer, params)
             self.assertEqual(result["is_correct"], False)
 
         with self.subTest(tag="Response is not constant"):
             response = "1.7+x"
             answer = "sqrt(3)+5"
-            params = {"atol": 0.005}
+            params.update({"atol": 0.005})
             result = evaluation_function(response, answer, params)
             self.assertEqual(result["is_correct"], False)
 
         with self.subTest(tag="Answer is not constant, tolerance specified with atol"):
             response = "6.73"
             answer = "sqrt(3)+x"
-            params = {"atol": 0.005}
+            params.update({"atol": 0.005})
             result = evaluation_function(response, answer, params)
             self.assertEqual(result["is_correct"], False)
 
         with self.subTest(tag="Response is not constant, tolerance specified with rtol"):
             response = "6.7+x"
             answer = "sqrt(3)+5"
-            params = {"rtol": 0.0005}
+            params.update({"rtol": 0.0005})
             result = evaluation_function(response, answer, params)
             self.assertEqual(result["is_correct"], False)
 
         with self.subTest(tag="Answer is not constant, tolerance specified with rtol"):
             response = "6.73"
             answer = "sqrt(3)+x"
-            params = {"rtol": 0.0005}
+            params.update({"rtol": 0.0005})
             result = evaluation_function(response, answer, params)
             self.assertEqual(result["is_correct"], False)
 
