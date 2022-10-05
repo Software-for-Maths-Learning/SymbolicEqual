@@ -312,10 +312,12 @@ def check_equality(response, answer, params) -> dict:
 
     feedback = {}
 
+    separator = "" if len(remark) == 0 else "\n"
+
     if (not isinstance(res,Equality)) and isinstance(ans,Equality):
         return {
             "is_correct": False,
-            "feedback": "The response was an expression but was expected to be an equality."+"\n"+remark,
+            "feedback": "The response was an expression but was expected to be an equality."+separator+remark,
             "response_simplified": str(ans),
             **interp
         }
@@ -324,7 +326,7 @@ def check_equality(response, answer, params) -> dict:
     if isinstance(res,Equality) and (not isinstance(ans,Equality)):
         return {
             "is_correct": False,
-            "feedback": "The response was an equality but was expected to be an expression."+"\n"+remark,
+            "feedback": "The response was an equality but was expected to be an expression."+separator+remark,
             "response_simplified": str(ans),
             **interp
         }
@@ -345,6 +347,27 @@ def check_equality(response, answer, params) -> dict:
     # Dealing with special cases
     res, ans = RecpTrig(res, ans)
     res, ans = Decimals(res, ans)
+
+    error_below_atol = False
+    error_below_rtol = False
+    if res.is_constant() and ans.is_constant() and ("atol" or "rtol" in params.keys()): 
+
+        if "atol" in params.keys():
+            error_below_atol = bool(abs(float(ans-res)) < float(params["atol"]))
+        else:
+            error_below_atol = True
+        if "rtol" in params.keys():
+            rtol = float(params["rtol"])
+            error_below_rtol = bool(float(abs(((ans-res)/ans).simplify())) < rtol)
+        else:
+            error_below_rtol = True
+    if error_below_atol and error_below_rtol:
+        return {
+            "is_correct": True,
+            "level": "0",
+            "feedback": "The response is numerically equal to the answer."+separator+remark,
+            **interp
+            }
 
     # Going from the simplest to complex tranformations available in sympy, check equality
     # https://github.com/sympy/sympy/wiki/Faq#why-does-sympy-say-that-two-equal-expressions-are-unequal
