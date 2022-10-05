@@ -257,7 +257,7 @@ def Absolute(res, ans):
     if n_ans > 2 and len(ans_ambiguous_abs_pos) > 0:
         raise SyntaxWarning(ambiguity_warning_answer,"ambiguityWith|")
     if n_res > 2 and len(res_ambiguous_abs_pos) > 0:
-        remark = "\n"+ambiguity_warning_response
+        remark = ambiguity_warning_response
 
     return res, ans, remark
 
@@ -298,7 +298,7 @@ def check_equality(response, answer, params) -> dict:
         res = parse_expression(response, parsing_params)
     except (SyntaxError, TypeError) as e:
         if remark != "":
-            return {"is_correct": False, "feedback": "The evaluation function could not parse your response."+remark}
+            return {"is_correct": False, "feedback": "The evaluation function could not parse your response."+"\n"+remark}
         else:
             raise Exception("SymPy was unable to parse the answer.") from e
 
@@ -312,10 +312,12 @@ def check_equality(response, answer, params) -> dict:
 
     feedback = {}
 
+    separator = "" if len(remark) == 0 else "\n"
+
     if (not isinstance(res,Equality)) and isinstance(ans,Equality):
         return {
             "is_correct": False,
-            "feedback": "The response was an expression but was expected to be an equality."+remark,
+            "feedback": "The response was an expression but was expected to be an equality."+separator+remark,
             "response_simplified": str(ans),
             **interp
         }
@@ -324,7 +326,7 @@ def check_equality(response, answer, params) -> dict:
     if isinstance(res,Equality) and (not isinstance(ans,Equality)):
         return {
             "is_correct": False,
-            "feedback": "The response was an equality but was expected to be an expression."+remark,
+            "feedback": "The response was an equality but was expected to be an expression."+separator+remark,
             "response_simplified": str(ans),
             **interp
         }
@@ -333,7 +335,7 @@ def check_equality(response, answer, params) -> dict:
     if isinstance(res,Equality) and isinstance(ans,Equality):
         is_correct = ((res.args[0]-res.args[1])/(ans.args[0]-ans.args[1])).simplify().is_constant()
         if remark != "":
-            feedback = {"feedback": "Correct."+remark}
+            feedback = {"feedback": remark}
         return {
             "is_correct": is_correct,
             "response_simplified": str(ans),
@@ -346,12 +348,33 @@ def check_equality(response, answer, params) -> dict:
     res, ans = RecpTrig(res, ans)
     res, ans = Decimals(res, ans)
 
+    error_below_atol = False
+    error_below_rtol = False
+    if res.is_constant() and ans.is_constant() and ("atol" or "rtol" in params.keys()): 
+
+        if "atol" in params.keys():
+            error_below_atol = bool(abs(float(ans-res)) < float(params["atol"]))
+        else:
+            error_below_atol = True
+        if "rtol" in params.keys():
+            rtol = float(params["rtol"])
+            error_below_rtol = bool(float(abs(((ans-res)/ans).simplify())) < rtol)
+        else:
+            error_below_rtol = True
+    if error_below_atol and error_below_rtol:
+        return {
+            "is_correct": True,
+            "level": "0",
+            "feedback": "The response is numerically equal to the answer."+separator+remark,
+            **interp
+            }
+
     # Going from the simplest to complex tranformations available in sympy, check equality
     # https://github.com/sympy/sympy/wiki/Faq#why-does-sympy-say-that-two-equal-expressions-are-unequal
     is_correct = bool(res.expand() == ans.expand())
     if is_correct:
         if remark != "":
-            feedback = {"feedback": "Correct."+remark}
+            feedback = {"feedback": remark}
         return {
             "is_correct": True,
             "level": "1",
@@ -363,7 +386,7 @@ def check_equality(response, answer, params) -> dict:
     is_correct = bool(res.simplify() == ans.simplify())
     if is_correct:
         if remark != "":
-            feedback = {"feedback": "Correct."+remark}
+            feedback = {"feedback": remark}
         return {
             "is_correct": True,
             "level": "2",
@@ -376,7 +399,7 @@ def check_equality(response, answer, params) -> dict:
     is_correct = bool(res.trigsimp() == ans.trigsimp())
     if is_correct:
         if remark != "":
-            feedback = {"feedback": "Correct."+remark}
+            feedback = {"feedback": remark}
         return {
             "is_correct": True,
             "level": "3",
@@ -389,7 +412,7 @@ def check_equality(response, answer, params) -> dict:
     is_correct = bool((res.simplify() - ans.simplify()).simplify() == 0)
     if is_correct:
         if remark != "":
-            feedback = {"feedback": "Correct."+remark}
+            feedback = {"feedback": remark}
         return {
             "is_correct": True,
             "level": "4",
@@ -399,7 +422,7 @@ def check_equality(response, answer, params) -> dict:
         }
 
     if remark != "":
-        feedback = {"feedback": "Incorrect."+remark}
+        feedback = {"feedback": remark}
     return {"is_correct": False, "response_simplified": str(res), **feedback, **interp}
 
 def find_matching_parenthesis(string,index):
