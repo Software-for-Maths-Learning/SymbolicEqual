@@ -7,6 +7,8 @@ try:
 except ImportError:
     from expression_utilities import preprocess_expression, parse_expression, create_sympy_parsing_params, substitute
 
+parse_error_warning = lambda x: f"'{x}' could not be parsed as a valid mathematical expression. Ensure that correct notation is used, that the expression is unambiguous and that all parentheses are closed."
+
 def evaluation_function(response, answer, params) -> dict:
 
     """
@@ -290,15 +292,22 @@ def check_equality(response, answer, params) -> dict:
             except Exception as e:
                raise Exception(f"Assumption {ass} for symbol {sym} caused a problem.")
 
+
     # Dealing with special cases that aren't accepted by SymPy
     response, answer, remark = Absolute(response, answer)
+
+    if params.get("strict_syntax",True):
+        if "^" in response:
+            separator = "" if len(remark) == 0 else "\n"
+            remark += separator+"Note that '^' cannot be used to denote exponentiation, use '**' instead."
 
     # Safely try to parse answer and response into symbolic expressions
     try:
         res = parse_expression(response, parsing_params)
     except (SyntaxError, TypeError) as e:
         if remark != "":
-            return {"is_correct": False, "feedback": "The evaluation function could not parse your response."+"\n"+remark}
+            separator = "" if len(remark) == 0 else "\n"
+            return {"is_correct": False, "feedback": parse_error_warning(response)+separator+remark}
         else:
             raise Exception("SymPy was unable to parse the answer.") from e
 
