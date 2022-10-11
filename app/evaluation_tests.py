@@ -1,9 +1,9 @@
 import unittest
 
 try:
-    from .evaluation import evaluation_function
+    from .evaluation import evaluation_function, parse_error_warning
 except ImportError:
-    from evaluation import evaluation_function
+    from evaluation import evaluation_function, parse_error_warning
 
 
 class TestEvaluationFunction(unittest.TestCase):
@@ -400,6 +400,19 @@ class TestEvaluationFunction(unittest.TestCase):
             params.update({"rtol": 0.0005})
             result = evaluation_function(response, answer, params)
             self.assertEqual(result["is_correct"], False)
+
+    def test_warning_inappropriate_symbol(self):
+        answer = '2**4'
+        response = '2^4'
+        params = {'strict_syntax': True }
+        result = evaluation_function(response, answer, params)
+        self.assertEqual(result["feedback"], "Note that '^' cannot be used to denote exponentiation, use '**' instead.")
+
+        answer = '2**4'
+        response = '2^0.5'
+        params = {'strict_syntax': True }
+        result = evaluation_function(response, answer, params)
+        self.assertEqual(result["feedback"], parse_error_warning(response)+"\n"+"Note that '^' cannot be used to denote exponentiation, use '**' instead.")
 
 if __name__ == "__main__":
     unittest.main()
