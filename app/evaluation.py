@@ -7,7 +7,7 @@ try:
 except ImportError:
     from expression_utilities import preprocess_expression, parse_expression, create_sympy_parsing_params, substitute
 
-parse_error_warning = lambda x: f"'{x}' could not be parsed as a valid mathematical expression. Ensure that correct notation is used, that the expression is unambiguous and that all parentheses are closed."
+parse_error_warning = lambda x: f"`{x}` could not be parsed as a valid mathematical expression. Ensure that correct notation is used, that the expression is unambiguous and that all parentheses are closed."
 
 def evaluation_function(response, answer, params) -> dict:
 
@@ -299,7 +299,7 @@ def check_equality(response, answer, params) -> dict:
     if params.get("strict_syntax",True):
         if "^" in response:
             separator = "" if len(remark) == 0 else "\n"
-            remark += separator+"Note that '^' cannot be used to denote exponentiation, use '**' instead."
+            remark += separator+"Note that `^` cannot be used to denote exponentiation, use `**` instead."
 
     # Safely try to parse answer and response into symbolic expressions
     try:
