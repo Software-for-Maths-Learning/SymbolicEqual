@@ -406,13 +406,13 @@ class TestEvaluationFunction(unittest.TestCase):
         response = '2^4'
         params = {'strict_syntax': True }
         result = evaluation_function(response, answer, params)
-        self.assertEqual(result["feedback"], "Note that '^' cannot be used to denote exponentiation, use '**' instead.")
+        self.assertEqual(result["feedback"], "Note that `^` cannot be used to denote exponentiation, use `**` instead.")
 
         answer = '2**4'
         response = '2^0.5'
         params = {'strict_syntax': True }
         result = evaluation_function(response, answer, params)
-        self.assertEqual(result["feedback"], parse_error_warning(response)+"\n"+"Note that `^`' cannot be used to denote exponentiation, use `**` instead.")
+        self.assertEqual(result["feedback"], parse_error_warning(response)+"\n"+"Note that `^` cannot be used to denote exponentiation, use `**` instead.")
 
 if __name__ == "__main__":
     unittest.main()
