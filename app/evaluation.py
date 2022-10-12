@@ -270,6 +270,13 @@ def check_equality(response, answer, params) -> dict:
 
     unsplittable_symbols = tuple()+(params.get("plus_minus","plus_minus"),params.get("minus_plus","minus_plus"))
 
+    answer = answer.strip()
+    response = response.strip()
+    if len(answer) == 0:
+        raise Exception("No answer was given.")
+    if len(response) == 0:
+        return {"is_correct": False, "feedback": "No response submitted."}
+
     answer, response = preprocess_expression([answer, response],params)
     parsing_params = create_sympy_parsing_params(params, unsplittable_symbols=unsplittable_symbols)
     parsing_params["extra_transformations"] = parser_transformations[9] # Add conversion of equal signs
