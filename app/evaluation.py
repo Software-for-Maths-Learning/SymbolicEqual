@@ -270,6 +270,11 @@ def check_equality(response, answer, params) -> dict:
 
     unsplittable_symbols = tuple()+(params.get("plus_minus","plus_minus"),params.get("minus_plus","minus_plus"))
 
+    if not isinstance(answer,str):
+        raise Exception("No answer was given.")
+    if not isinstance(response,str):
+        return {"is_correct": False, "feedback": "No response submitted."}
+
     answer = answer.strip()
     response = response.strip()
     if len(answer) == 0:
