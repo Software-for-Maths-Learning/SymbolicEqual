@@ -420,7 +420,7 @@ class TestEvaluationFunction(unittest.TestCase):
         params = {'strict_syntax': True }
         result = evaluation_function(response, answer, params)
         self.assertEqual(parse_error_warning(response) in result["feedback"], True)
-
+        
     def test_empty_response_answer(self):
         with self.subTest(tag="Empty response"):
             answer = "5*x"
