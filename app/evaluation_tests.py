@@ -414,5 +414,47 @@ class TestEvaluationFunction(unittest.TestCase):
         result = evaluation_function(response, answer, params)
         self.assertEqual(result["feedback"], parse_error_warning(response)+"\n"+"Note that `^` cannot be used to denote exponentiation, use `**` instead.")
 
+<<<<<<< Updated upstream
+=======
+    def test_error_inappropriate_symbol(self):
+        answer = '0.5'
+        response = '0,5'
+        params = {'strict_syntax': True }
+        result = evaluation_function(response, answer, params)
+        self.assertEqual(parse_error_warning(response) in result["feedback"], True)
+
+    def test_empty_response_answer(self):
+        with self.subTest(tag="Empty response"):
+            answer = "5*x"
+            response = ""
+            result = evaluation_function(response, answer, {})
+            self.assertEqual(result["feedback"], "No response submitted.")
+        with self.subTest(tag="Whitespace response"):
+            answer = "5*x"
+            response = "  \t\n"
+            result = evaluation_function(response, answer, {})
+            self.assertEqual(result["feedback"], "No response submitted.")
+        with self.subTest(tag="Whitespace answer"):
+            answer = ""
+            response = "5*x"
+            self.assertRaises(
+                Exception,
+                evaluation_function,
+                response,
+                answer,
+                {},
+            )
+        with self.subTest(tag="Whitespace answer"):
+            answer = "  \t\n"
+            response = "5*x"
+            self.assertRaises(
+                Exception,
+                evaluation_function,
+                response,
+                answer,
+                {},
+            )
+
+>>>>>>> Stashed changes
 if __name__ == "__main__":
     unittest.main()

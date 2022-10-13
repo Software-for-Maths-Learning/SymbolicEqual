@@ -68,64 +68,49 @@ def evaluation_function(response, answer, params) -> dict:
             raise SyntaxWarning(f"Unknown multiple_answers_criteria: {params['multiple_answers_critera']}")
         return {"is_correct": is_correct, "response_latex": interp}
 
-def RecpTrig(res, ans):
+def RecpTrig(expr):
     """
     Reciprocal Trig Functions -> Turn sec, csc, cot into sin form
     
     Parameters
     ----------
-    res : SymPy expression
-        Reponse Input from Teacher, might have sec, csc, cot
-    ans : SymPy expression
-        Answer Input from Student, might have sec, csc, cot
+    expr : SymPy expression, might have sec, csc, cot
 
     Returns
     -------
-    res : SymPy expression
-        Updated response input
-    ans : SymPy expression
-        Updated answer input
-        
+    expr : Updated expression
+
     Tests
     -----
     Checks if '1+tan(x)**2 + y = sec(x)**2 + y', as this solves the issue
     with sec(x)
     """
     from sympy import sec, csc, cot, sin
-    if res.has(sec) or res.has(csc) or res.has(cot):
-        res = res.rewrite(sin)
-    if ans.has(sec) or ans.has(csc) or ans.has(cot):
-        ans = ans.rewrite(sin)
-    return res, ans
+    if expr.has(sec) or expr.has(csc) or expr.has(cot):
+        expr = expr.rewrite(sin)
+    return expr
 
 
-def Decimals(res, ans):
+def Decimals(expr):
     """
     Decimals -> Turn into rational form
     Otherwise x/2 not seen as equal to x*0.5
     
     Parameters
     ----------
-    res : SymPy expression
-        Reponse Input from Teacher, might have decimals
-    ans : SymPy expression
-        Answer Input from Student, might have decimals
+    expr : Input expression, might have decimals
 
     Returns
     -------
-    res : SymPy expression
-        Updated response input
-    ans : SymPy expression
-        Updated answer input
+    expr : Updated expression
     
     Tests
     -----
     Checks if x*0.5 = x/2
     """
     from sympy import nsimplify
-    res = nsimplify(res)
-    ans = nsimplify(ans)
-    return res, ans
+    expr = nsimplify(expr)
+    return expr
 
 
 def Absolute(res, ans):
@@ -354,8 +339,19 @@ def check_equality(response, answer, params) -> dict:
         return
 
     # Dealing with special cases
-    res, ans = RecpTrig(res, ans)
-    res, ans = Decimals(res, ans)
+    try:
+        res = RecpTrig(res)
+        res = Decimals(res)
+    except Exception:
+        separator = "" if len(remark) == 0 else "\n"
+        return {"is_correct": False, "feedback": parse_error_warning(response)+separator+remark}
+
+    try:
+        ans = RecpTrig(ans)
+        ans = Decimals(ans)
+    except (SyntaxError, TypeError) as e:
+        raise Exception("SymPy was unable to parse the answer.") from e
+
 
     error_below_atol = False
     error_below_rtol = False
