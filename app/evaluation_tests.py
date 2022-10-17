@@ -96,15 +96,10 @@ class TestEvaluationFunction(unittest.TestCase):
         self.assertEqual_input_variations(response, answer, params, True)
 
     def test_invalid_user_expression(self):
-        body = {"response": "3x", "answer": "3*x"}
-
-        self.assertRaises(
-            Exception,
-            evaluation_function,
-            body["response"],
-            body["answer"],
-            {},
-        )
+        response = "3x"
+        answer = "3*x"
+        result = evaluation_function(response,answer,{})
+        self.assertEqual(parse_error_warning(response) in result["feedback"], True)
 
     def test_invalid_author_expression(self):
         body = {"response": "3*x", "answer": "3x"}
@@ -420,7 +415,19 @@ class TestEvaluationFunction(unittest.TestCase):
         params = {'strict_syntax': True }
         result = evaluation_function(response, answer, params)
         self.assertEqual(parse_error_warning(response) in result["feedback"], True)
-        
+
+        answer = '(0.002*6800*v)/1.2'
+        response = '(0,002*6800*v)/1,2'
+        params = {'strict_syntax': False }
+        result = evaluation_function(response, answer, params)
+        self.assertEqual(parse_error_warning(response) in result["feedback"], True)
+
+        answer = '-inf'
+        response = '-∞'
+        params = {'strict_syntax': False }
+        result = evaluation_function(response, answer, params)
+        self.assertEqual(parse_error_warning(response) in result["feedback"], True)
+
     def test_empty_response_answer(self):
         with self.subTest(tag="Empty response"):
             answer = "5*x"
