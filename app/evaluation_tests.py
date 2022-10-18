@@ -96,8 +96,8 @@ class TestEvaluationFunction(unittest.TestCase):
         self.assertEqual_input_variations(response, answer, params, True)
 
     def test_invalid_user_expression(self):
-        response = "3x"
-        answer = "3*x"
+        response = "a*(b+c"
+        answer = "a*(b+c)"
         result = evaluation_function(response,answer,{})
         self.assertEqual(parse_error_warning(response) in result["feedback"], True)
 

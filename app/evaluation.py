@@ -301,13 +301,13 @@ def check_equality(response, answer, params) -> dict:
     # Safely try to parse answer and response into symbolic expressions
     try:
         res = parse_expression(response, parsing_params)
-    except (SyntaxError, TypeError) as e:
+    except Exception as e:
         separator = "" if len(remark) == 0 else "\n"
         return {"is_correct": False, "feedback": parse_error_warning(response)+separator+remark}
 
     try:
         ans = parse_expression(answer, parsing_params)
-    except (SyntaxError, TypeError) as e:
+    except Exception as e:
         raise Exception("SymPy was unable to parse the answer."+remark,) from e
 
     # Add how res was interpreted to the response
