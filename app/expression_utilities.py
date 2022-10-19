@@ -170,6 +170,8 @@ def parse_expression(expr, parsing_params):
     extra_transformations = parsing_params.get("extra_transformations",())
     unsplittable_symbols = parsing_params.get("unsplittable_symbols",())
     symbol_dict = parsing_params.get("symbol_dict",{})
+    separate_unsplittable_symbols = [(x,x+" ") for x in unsplittable_symbols]
+    expr = substitute(expr,separate_unsplittable_symbols)
     if strict_syntax:
         transformations = parser_transformations[0:4]+extra_transformations
     else:
