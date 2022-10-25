@@ -118,8 +118,14 @@ def create_sympy_parsing_params(params, unsplittable_symbols=tuple()):
         parsing_params: A dictionary that contains necessary info for the
                         parse_expression function.
     '''
+
     if "input_symbols" in params.keys():
-        unsplittable_symbols += tuple(x[0] for x in params["input_symbols"])
+        #unsplittable_symbols += tuple(x[0] for x in params["input_symbols"])
+        to_keep = []
+        for symbol in [x[0] for x in params["input_symbols"]]:
+            if len(symbol) > 1:
+                to_keep.append(symbol)
+        unsplittable_symbols += tuple(to_keep)
 
     if params.get("specialFunctions", False) == True:
         from sympy import beta, gamma, zeta
@@ -175,5 +181,13 @@ def parse_expression(expr, parsing_params):
     if strict_syntax:
         transformations = parser_transformations[0:4]+extra_transformations
     else:
+#        # Remove all single character unsplittable symbols
+#        # to reduce risk of splitting function names
+#        to_keep = []
+#        for symbol in unsplittable_symbols:
+#            if len(symbol) > 1:
+#                to_keep.append(symbol)
+#        unsplittable_symbols = tuple(to_keep)
+#        symbol_dict = {x: symbol_dict[x] for x in to_keep}
         transformations = parser_transformations[0:4,6]+extra_transformations+(split_symbols_custom(lambda x: x not in unsplittable_symbols),)+parser_transformations[8]
     return parse_expr(expr,transformations=transformations,local_dict=symbol_dict)

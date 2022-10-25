@@ -473,5 +473,38 @@ class TestEvaluationFunction(unittest.TestCase):
                 {},
             )
 
+    def test_AAA_slow_response(self):
+        params = {"strict_syntax": False,
+                  "input_symbols": [["fx",["f","f_x","fofx"]],\
+                                    ["C",["c","k","K"]],\
+                                    ["A",["a"]],\
+                                    ["B",["b"]],\
+                                    ["x",["X"]],\
+                                    ["y",["Y"]]]}
+        with self.subTest(tag="With `fx` in response"):
+            answer = "-A*exp(x/b)*sin(y/b)+fx+C"
+            response = "-A*exp(x/b)*sin(y/b)+fx+C"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+
+#        with self.subTest(tag="With `e^` in response"):
+#            answer = "-A*e^(x/b)*sin(y/b)+fx+C"
+#            response = "-A*e^(x/b)*sin(y/b)+fx+C"
+#            result = evaluation_function(response, answer, params)
+#            self.assertEqual(result["is_correct"], True)
+#
+#        with self.subTest(tag="Without `-` in response"):
+#            answer = "A*exp(x/b)*sin(y/b)+fx+C"
+#            response = "A*exp(x/b)*sin(y/b)+fx+C"
+#            result = evaluation_function(response, answer, params)
+#            self.assertEqual(result["is_correct"], True)
+#
+#        with self.subTest(tag="With `f(x)` in response"):
+#            answer = "A*exp(x/b)*sin(y/b)+f(x)+C"
+#            response = "-A*exp(x/b)*sin(y/b)+f(x)+C"
+#            result = evaluation_function(response, answer, params)
+#            self.assertEqual(result["is_correct"], True)
+
+
 if __name__ == "__main__":
     unittest.main()
