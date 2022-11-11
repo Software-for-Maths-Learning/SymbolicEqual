@@ -364,25 +364,30 @@ def check_equality(response, answer, params) -> dict:
 
     error_below_atol = False
     error_below_rtol = False
-    
-    if res.is_constant() and ans.is_constant() and params.get("numerical",False): 
 
-        if "atol" in params.keys():
-            error_below_atol = bool(abs(float(ans-res)) < float(params["atol"]))
-        else:
-            error_below_atol = True
-        if "rtol" in params.keys():
-            rtol = float(params["rtol"])
-            error_below_rtol = bool(float(abs(((ans-res)/ans).simplify())) < rtol)
-        else:
-            error_below_rtol = True
-    if error_below_atol and error_below_rtol:
-        return {
-            "is_correct": True,
-            "level": "0",
-            "feedback": "The response is numerically equal to the answer."+separator+remark,
-            **interp
-            }
+    if params.get("numerical",False) or params.get("rtol",False) or params.get("atol",False):
+        # REMARK: 'pi' should be a reserve symbols but is sometimes not treated as one, possibly because of input symbols
+        # The two lines below this comments fixes the issue but a more robust solution should be found for cases where there
+        # are other reserved symbols.
+        ans = ans.subs(Symbol('pi'),float(pi))
+        res = res.subs(Symbol('pi'),float(pi))
+        if res.is_constant() and ans.is_constant(): 
+            if "atol" in params.keys():
+                error_below_atol = bool(abs(float(ans-res)) < float(params["atol"]))
+            else:
+                error_below_atol = True
+            if "rtol" in params.keys():
+                rtol = float(params["rtol"])
+                error_below_rtol = bool(float(abs(((ans-res)/ans).simplify())) < rtol)
+            else:
+                error_below_rtol = True
+        if error_below_atol and error_below_rtol:
+            return {
+                "is_correct": True,
+                "level": "0",
+                "feedback": "The response is numerically equal to the answer."+separator+remark,
+                **interp
+                }
 
     # Going from the simplest to complex tranformations available in sympy, check equality
     # https://github.com/sympy/sympy/wiki/Faq#why-does-sympy-say-that-two-equal-expressions-are-unequal
