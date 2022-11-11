@@ -48,11 +48,13 @@ def preprocess_expression(exprs, params):
 def substitute(string, substitutions):
     '''
     Input:
-        string        : a string or a list of strings
-        substitutions : a list of pairs of strings
+        string        (required) : a string or a list of strings
+        substitutions (required) : a list with elements of the form (string,string)
+                                   or ((string,list of strings),string)
     Output:
         A string that is the input string where any occurence of the left element 
         of each pair in substitutions have been replaced with the corresponding right element.
+        If the first element in the substitution is of the form (string,list of strings) then the substitution will only happen if the first element followed by one of the strings in the list in the second element.
     Remarks:
         Substitutions are made in the input order but if a substitutions left element is a
         substring of a preceding substitutions right element there will be no substitution.
@@ -82,13 +84,23 @@ def substitute(string, substitutions):
             while index < len(part):
                 matched_start = False
                 for k,pair in enumerate(substitutions):
-                    if part.startswith(pair[0],index):
+                    if isinstance(pair[0], tuple):
+                        match = False
+                        for look_ahead in pair[0][1]:
+                            if part.startswith(pair[0][0]+look_ahead,index):
+                                match = True
+                                break
+                        substitution_length = len(pair[0][0])
+                    else:
+                        match = part.startswith(pair[0],index)
+                        substitution_length = len(pair[0])
+                    if match:
                         matched_start = True
                         if len(string_buffer) > 0:
                             new_string.append(string_buffer)
                             string_buffer = ""
                         new_string.append(k)
-                        index += len(pair[0])
+                        index += substitution_length
                         break
                 if not matched_start:
                     string_buffer += part[index]
@@ -104,7 +116,7 @@ def substitute(string, substitutions):
 
 # -------- (Sympy) Expression Parsing Utilities
 
-from sympy.parsing.sympy_parser import parse_expr, split_symbols_custom
+from sympy.parsing.sympy_parser import parse_expr, split_symbols_custom, _token_splittable
 from sympy.parsing.sympy_parser import T as parser_transformations
 from sympy import Symbol
 
@@ -120,7 +132,6 @@ def create_sympy_parsing_params(params, unsplittable_symbols=tuple()):
     '''
 
     if "input_symbols" in params.keys():
-        #unsplittable_symbols += tuple(x[0] for x in params["input_symbols"])
         to_keep = []
         for symbol in [x[0] for x in params["input_symbols"]]:
             if len(symbol) > 1:
@@ -178,16 +189,9 @@ def parse_expression(expr, parsing_params):
     symbol_dict = parsing_params.get("symbol_dict",{})
     separate_unsplittable_symbols = [(x,x+" ") for x in unsplittable_symbols]
     expr = substitute(expr,separate_unsplittable_symbols)
+    can_split = lambda x: False if x in unsplittable_symbols else _token_splittable(x)
     if strict_syntax:
         transformations = parser_transformations[0:4]+extra_transformations
     else:
-#        # Remove all single character unsplittable symbols
-#        # to reduce risk of splitting function names
-#        to_keep = []
-#        for symbol in unsplittable_symbols:
-#            if len(symbol) > 1:
-#                to_keep.append(symbol)
-#        unsplittable_symbols = tuple(to_keep)
-#        symbol_dict = {x: symbol_dict[x] for x in to_keep}
-        transformations = parser_transformations[0:4,6]+extra_transformations+(split_symbols_custom(lambda x: x not in unsplittable_symbols),)+parser_transformations[8]
+        transformations = parser_transformations[0:4,6]+extra_transformations+(split_symbols_custom(can_split),)+parser_transformations[8]
     return parse_expr(expr,transformations=transformations,local_dict=symbol_dict)
