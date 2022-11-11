@@ -473,37 +473,31 @@ class TestEvaluationFunction(unittest.TestCase):
                 {},
             )
 
-#    def test_AAA_slow_response(self):
-#        params = {"strict_syntax": False,
-#                  "input_symbols": [["fx",["f","f_x","fofx"]],\
-#                                    ["C",["c","k","K"]],\
-#                                    ["A",["a"]],\
-#                                    ["B",["b"]],\
-#                                    ["x",["X"]],\
-#                                    ["y",["Y"]]]}
-#        with self.subTest(tag="With `fx` in response"):
-#            answer = "-A*exp(x/b)*sin(y/b)+fx+C"
-#            response = "-A*exp(x/b)*sin(y/b)+fx+C"
-#            result = evaluation_function(response, answer, params)
-#            self.assertEqual(result["is_correct"], True)
-#
-#        with self.subTest(tag="With `e^` in response"):
-#            answer = "-A*e^(x/b)*sin(y/b)+fx+C"
-#            response = "-A*e^(x/b)*sin(y/b)+fx+C"
-#            result = evaluation_function(response, answer, params)
-#            self.assertEqual(result["is_correct"], True)
-#
-#        with self.subTest(tag="Without `-` in response"):
-#            answer = "A*exp(x/b)*sin(y/b)+fx+C"
-#            response = "A*exp(x/b)*sin(y/b)+fx+C"
-#            result = evaluation_function(response, answer, params)
-#            self.assertEqual(result["is_correct"], True)
-#
-#        with self.subTest(tag="With `f(x)` in response"):
-#            answer = "A*exp(x/b)*sin(y/b)+f(x)+C"
-#            response = "-A*exp(x/b)*sin(y/b)+f(x)+C"
-#            result = evaluation_function(response, answer, params)
-#            self.assertEqual(result["is_correct"], True)
+    def test_AAA_slow_response(self):
+        params = {"strict_syntax": False,
+                  "input_symbols": [["fx",["f","f_x","fofx"]],\
+                                    ["C",["c","k","K"]],\
+                                    ["A",["a"]],\
+                                    ["B",["b"]],\
+                                    ["x",["X"]],\
+                                    ["y",["Y"]]]}
+        with self.subTest(tag="With `fx` in response"):
+            answer = "-A*exp(x/b)*sin(y/b)+fx+C"
+            response = "-A*exp(x/b)*sin(y/b)+fx+C"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+
+        with self.subTest(tag="Without `-` in response"):
+            answer = "-A*exp(x/b)*sin(y/b)+fx+C"
+            response = "A*exp(x/b)*sin(y/b)+fx+C"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], False)
+
+        with self.subTest(tag="With `f(x)` in response"):
+            answer = "A*exp(x/b)*sin(y/b)+f(x)+C"
+            response = "-A*exp(x/b)*sin(y/b)+f(x)+C"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], False)
 
     def test_pi_with_rtol(self):
         answer = "pi"
@@ -527,7 +521,6 @@ class TestEvaluationFunction(unittest.TestCase):
                 ]
             for response in responses:
                 result = evaluation_function(response, answer, params)
-                print(result["response_latex"])
                 self.assertEqual(result["is_correct"], False)
 
         with self.subTest(tag="2.6 a)"):
@@ -535,16 +528,20 @@ class TestEvaluationFunction(unittest.TestCase):
             answer = "6*cos(5*x+1)-90*x*sin(5*x+1)-225*x**2*cos(5*x+1)+125*x**3*sin(5*x+1)"
             response = "-90xsin(5x+1)"
             result = evaluation_function(response, answer, params)
-            print(result["response_latex"])
             self.assertEqual(result["is_correct"], False)
             responses = [
-                "6cos(5x+1)-90x*sin(5x+1)-225x^2cos(5x+1)+125x^3sin(5x+1)"
+                "6*cos(5*x+1)-90*x*sin(5*x+1)-225*x**2*cos(5*x+1)+125*x**3*sin(5*x+1)",
+                "6cos(5x+1)-90x*sin(5x+1)-225x^2cos(5x+1)+125x^3sin(5x+1)",
+                ]
+            for response in responses:
+                result = evaluation_function(response, answer, params)
+                self.assertEqual(result["is_correct"], True)
+            responses = [
                 "6cos(5x+1)-90xsin(5x+1)-225x^2cos(5x+1)+125x^3sin(5x+1)",
                 "(125x^3)*(cos(5x+1))-(225x^2)*(cos(5x+1))-(90x)*(sin(5x+1))+6cos(5x+1)",
                 ]
             for response in responses:
                 result = evaluation_function(response, answer, params)
-                print(result["response_latex"])
                 self.assertEqual(result["is_correct"], False)
 
 if __name__ == "__main__":
