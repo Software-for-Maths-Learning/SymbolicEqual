@@ -311,7 +311,7 @@ def check_equality(response, answer, params) -> dict:
         raise Exception("SymPy was unable to parse the answer."+remark,) from e
 
     # Add how res was interpreted to the response
-    interp = {"response_latex": latex(res)}
+    interp = {"response_latex": latex(res), "response_simplified": str(res)}
 
     feedback = {}
 
@@ -321,7 +321,6 @@ def check_equality(response, answer, params) -> dict:
         return {
             "is_correct": False,
             "feedback": "The response was an expression but was expected to be an equality."+separator+remark,
-            "response_simplified": str(ans),
             **interp
         }
         return
@@ -330,7 +329,6 @@ def check_equality(response, answer, params) -> dict:
         return {
             "is_correct": False,
             "feedback": "The response was an equality but was expected to be an expression."+separator+remark,
-            "response_simplified": str(ans),
             **interp
         }
         return
@@ -341,7 +339,6 @@ def check_equality(response, answer, params) -> dict:
             feedback = {"feedback": remark}
         return {
             "is_correct": is_correct,
-            "response_simplified": str(ans),
             **feedback,
             **interp
         }
@@ -398,7 +395,6 @@ def check_equality(response, answer, params) -> dict:
         return {
             "is_correct": True,
             "level": "1",
-            "response_simplified": str(res.simplify()),
             **feedback,
             **interp
         }
@@ -410,7 +406,6 @@ def check_equality(response, answer, params) -> dict:
         return {
             "is_correct": True,
             "level": "2",
-            "response_simplified": str(res.simplify()),
             **feedback,
             **interp
         }
@@ -423,27 +418,25 @@ def check_equality(response, answer, params) -> dict:
         return {
             "is_correct": True,
             "level": "3",
-            "response_simplified": str(res.simplify()),
             **feedback,
             **interp
         }
 
     # General catch-all if above does not work
-    is_correct = bool((res.simplify() - ans.simplify()).simplify() == 0)
+    is_correct = bool((res - ans).simplify() == 0)
     if is_correct:
         if remark != "":
             feedback = {"feedback": remark}
         return {
             "is_correct": True,
             "level": "4",
-            "response_simplified": str(res.simplify()),
             **feedback,
             **interp
         }
 
     if remark != "":
         feedback = {"feedback": remark}
-    return {"is_correct": False, "response_simplified": str(res), **feedback, **interp}
+    return {"is_correct": False, **feedback, **interp}
 
 def find_matching_parenthesis(string,index):
     depth = 0
