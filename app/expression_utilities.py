@@ -118,10 +118,15 @@ def substitute(string, substitutions):
 
 from sympy.parsing.sympy_parser import parse_expr, split_symbols_custom, _token_splittable
 from sympy.parsing.sympy_parser import T as parser_transformations
-from sympy import Symbol,\
-    sin, sinc, csc, cos, sec, tan, cot, asin, acsc, acos, asec, atan, acot, atan2,\
-    sinh, cosh, tanh, csch, sech, asinh, acosh, atanh, acsch, asech,\
-    exp, log, sqrt, sign, Abs, Max, Min, arg, ceiling, floor
+from sympy import Symbol
+
+elementary_functions_names = [
+    'sin', 'sinc', 'csc', 'cos', 'sec', 'tan', 'cot', 'asin', 'acsc', 'acos', 'asec', 'atan', 'acot', 'atan2',\
+    'sinh', 'cosh', 'tanh', 'csch', 'sech', 'asinh', 'acosh', 'atanh', 'acsch', 'asech',\
+    'exp', 'log',\
+    'sqrt', 'sign', 'Abs', 'Max', 'Min', 'arg', 'ceiling', 'floor'\
+]
+elementary_functions_names.sort(key=lambda x: -len(x))
 
 def create_sympy_parsing_params(params, unsplittable_symbols=tuple()):
     '''
@@ -133,15 +138,6 @@ def create_sympy_parsing_params(params, unsplittable_symbols=tuple()):
         parsing_params: A dictionary that contains necessary info for the
                         parse_expression function.
     '''
-
-    if "elementary_function" in params.keys():
-        elementary_functions = [\
-            sin, sinc, csc, cos, sec, tan, cot, asin, acsc, acos, asec, atan, acot, atan2,\
-            sinh, cosh, tanh, csch, sech, asinh, acosh, atanh, acsch, asech,\
-            exp, log,\
-            sqrt, sign, Abs, Max, Min, arg, ceiling, floor\
-        ]
-        params["input_symbols"].update({str(x):x for x in elementary_functions})
 
     if "input_symbols" in params.keys():
         to_keep = []
@@ -182,7 +178,7 @@ def create_sympy_parsing_params(params, unsplittable_symbols=tuple()):
 
     strict_syntax = params.get("strict_syntax",True)
 
-    parsing_params = {"unsplittable_symbols": unsplittable_symbols, "strict_syntax": strict_syntax, "symbol_dict": symbol_dict, "extra_transformations": tuple()}
+    parsing_params = {"unsplittable_symbols": unsplittable_symbols, "strict_syntax": strict_syntax, "symbol_dict": symbol_dict, "extra_transformations": tuple(), "elementary_functions": params.get("elementary_functions",False)}
 
     return parsing_params
 
@@ -199,11 +195,14 @@ def parse_expression(expr, parsing_params):
     extra_transformations = parsing_params.get("extra_transformations",())
     unsplittable_symbols = parsing_params.get("unsplittable_symbols",())
     symbol_dict = parsing_params.get("symbol_dict",{})
-    separate_unsplittable_symbols = [(x,x+" ") for x in unsplittable_symbols]
+    separate_unsplittable_symbols = [(x," "+x+" ") for x in unsplittable_symbols]
+    if parsing_params["elementary_functions"] == True:
+        separate_unsplittable_symbols = [(x," "+x+" ") for x in elementary_functions_names] + separate_unsplittable_symbols
     expr = substitute(expr,separate_unsplittable_symbols)
     can_split = lambda x: False if x in unsplittable_symbols else _token_splittable(x)
     if strict_syntax:
         transformations = parser_transformations[0:4]+extra_transformations
     else:
         transformations = parser_transformations[0:4,6]+extra_transformations+(split_symbols_custom(can_split),)+parser_transformations[8]
-    return parse_expr(expr,transformations=transformations,local_dict=symbol_dict)
+    parsed_expr = parse_expr(expr,transformations=transformations,local_dict=symbol_dict)
+    return parsed_expr

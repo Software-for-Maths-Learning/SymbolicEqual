@@ -473,39 +473,6 @@ class TestEvaluationFunction(unittest.TestCase):
                 {},
             )
 
-<<<<<<< Updated upstream
-#    def test_AAA_slow_response(self):
-#        params = {"strict_syntax": False,
-#                  "input_symbols": [["fx",["f","f_x","fofx"]],\
-#                                    ["C",["c","k","K"]],\
-#                                    ["A",["a"]],\
-#                                    ["B",["b"]],\
-#                                    ["x",["X"]],\
-#                                    ["y",["Y"]]]}
-#        with self.subTest(tag="With `fx` in response"):
-#            answer = "-A*exp(x/b)*sin(y/b)+fx+C"
-#            response = "-A*exp(x/b)*sin(y/b)+fx+C"
-#            result = evaluation_function(response, answer, params)
-#            self.assertEqual(result["is_correct"], True)
-#
-#        with self.subTest(tag="With `e^` in response"):
-#            answer = "-A*e^(x/b)*sin(y/b)+fx+C"
-#            response = "-A*e^(x/b)*sin(y/b)+fx+C"
-#            result = evaluation_function(response, answer, params)
-#            self.assertEqual(result["is_correct"], True)
-#
-#        with self.subTest(tag="Without `-` in response"):
-#            answer = "A*exp(x/b)*sin(y/b)+fx+C"
-#            response = "A*exp(x/b)*sin(y/b)+fx+C"
-#            result = evaluation_function(response, answer, params)
-#            self.assertEqual(result["is_correct"], True)
-#
-#        with self.subTest(tag="With `f(x)` in response"):
-#            answer = "A*exp(x/b)*sin(y/b)+f(x)+C"
-#            response = "-A*exp(x/b)*sin(y/b)+f(x)+C"
-#            result = evaluation_function(response, answer, params)
-#            self.assertEqual(result["is_correct"], True)
-=======
     def test_slow_response(self):
         params = {"strict_syntax": False,
                   "input_symbols": [["fx",["f","f_x","fofx"]],\
@@ -531,7 +498,6 @@ class TestEvaluationFunction(unittest.TestCase):
             response = "-A*exp(x/b)*sin(y/b)+f(x)+C"
             result = evaluation_function(response, answer, params)
             self.assertEqual(result["is_correct"], False)
->>>>>>> Stashed changes
 
     def test_pi_with_rtol(self):
         answer = "pi"
@@ -555,7 +521,6 @@ class TestEvaluationFunction(unittest.TestCase):
                 ]
             for response in responses:
                 result = evaluation_function(response, answer, params)
-                print(result["response_latex"])
                 self.assertEqual(result["is_correct"], False)
 
         with self.subTest(tag="2.6 a)"):
@@ -563,185 +528,194 @@ class TestEvaluationFunction(unittest.TestCase):
             answer = "6*cos(5*x+1)-90*x*sin(5*x+1)-225*x**2*cos(5*x+1)+125*x**3*sin(5*x+1)"
             response = "-90xsin(5x+1)"
             result = evaluation_function(response, answer, params)
-            print(result["response_latex"])
             self.assertEqual(result["is_correct"], False)
             responses = [
-                "6cos(5x+1)-90x*sin(5x+1)-225x^2cos(5x+1)+125x^3sin(5x+1)"
+                "6*cos(5*x+1)-90*x*sin(5*x+1)-225*x**2*cos(5*x+1)+125*x**3*sin(5*x+1)",
+                "6cos(5x+1)-90x*sin(5x+1)-225x^2cos(5x+1)+125x^3sin(5x+1)",
+                ]
+            for response in responses:
+                result = evaluation_function(response, answer, params)
+                self.assertEqual(result["is_correct"], True)
+            responses = [
                 "6cos(5x+1)-90xsin(5x+1)-225x^2cos(5x+1)+125x^3sin(5x+1)",
                 "(125x^3)*(cos(5x+1))-(225x^2)*(cos(5x+1))-(90x)*(sin(5x+1))+6cos(5x+1)",
                 ]
             for response in responses:
                 result = evaluation_function(response, answer, params)
-                print(result["response_latex"])
                 self.assertEqual(result["is_correct"], False)
 
-def test_elementary_functions(self):
-    params = {"strict_syntax": False, "elementary_functions": True}
-    with self.subTest(tag="sin"):
-        answer = "0"
-        response = "Bsin(pi)"
-        result = evaluation_function(response, answer, params)
-        self.assertEqual(result["is_correct"], True)
-    with self.subTest(tag="sinc"):
-        answer = "B"
-        response = "Bsinc(0)"
-        result = evaluation_function(response, answer, params)
-        self.assertEqual(result["is_correct"], True)
-    with self.subTest(tag="csc"):
-        answer = "B"
-        response = "Bcsc(pi/2)"
-        result = evaluation_function(response, answer, params)
-        self.assertEqual(result["is_correct"], True)
-    with self.subTest(tag="cos"):
-        answer = "0"
-        response = "Bcos(pi/2)"
-        result = evaluation_function(response, answer, params)
-        self.assertEqual(result["is_correct"], True)
-    with self.subTest(tag="sec"):
-        answer = "B"
-        response = "Bsec(0)"
-        result = evaluation_function(response, answer, params)
-        self.assertEqual(result["is_correct"], True)
-    with self.subTest(tag="tan"):
-        answer = "B"
-        response = "Btan(pi/4)"
-        result = evaluation_function(response, answer, params)
-        self.assertEqual(result["is_correct"], True)
-    with self.subTest(tag="cot"):
-        answer = "B"
-        response = "Bcot(pi/4)"
-        result = evaluation_function(response, answer, params)
-        self.assertEqual(result["is_correct"], True)
-    with self.subTest(tag="asin"):
-        answer = "B*pi/2"
-        response = "Basin(1)"
-        result = evaluation_function(response, answer, params)
-        self.assertEqual(result["is_correct"], True)
-    with self.subTest(tag="acsc"):
-        answer = "B*pi/2"
-        response = "Bacsc(1)"
-        result = evaluation_function(response, answer, params)
-        self.assertEqual(result["is_correct"], True)
-    with self.subTest(tag="acos"):
-        answer = "0"
-        response = "Bacos(1)"
-        result = evaluation_function(response, answer, params)
-        self.assertEqual(result["is_correct"], True)
-    with self.subTest(tag="asec"):
-        answer = "0"
-        response = "Basec(1)"
-        result = evaluation_function(response, answer, params)
-        self.assertEqual(result["is_correct"], True)
-    with self.subTest(tag="atan"):
-        answer = "B*pi/4"
-        response = "Batan(1)"
-        result = evaluation_function(response, answer, params)
-        self.assertEqual(result["is_correct"], True)
-    with self.subTest(tag="acot"):
-        answer = "B*pi/4"
-        response = "Bacot(1)"
-        result = evaluation_function(response, answer, params)
-        self.assertEqual(result["is_correct"], True)
-    with self.subTest(tag="atan2"):
-        answer = "B*pi/4"
-        response = "Batan2(1,1)"
-        result = evaluation_function(response, answer, params)
-        self.assertEqual(result["is_correct"], True)
-    with self.subTest(tag="sinh"):
-        answer = "B*exp(x)"
-        response = "Bsinh(x)+Bcosh(x)"
-        result = evaluation_function(response, answer, params)
-        self.assertEqual(result["is_correct"], True)
-    with self.subTest(tag="cosh"):
-        answer = "B*cosh(-1)"
-        response = "Bcosh(1)"
-        result = evaluation_function(response, answer, params)
-        self.assertEqual(result["is_correct"], True)
-    with self.subTest(tag="tanh"):
-        answer = "B*tanh(2*x)"
-        response = "B*2*tanh(x)/(1+tanh(x)^2)"
-        result = evaluation_function(response, answer, params)
-        self.assertEqual(result["is_correct"], True)
-    with self.subTest(tag="csch"):
-        answer = "B/sinh(x)"
-        response = "Bcsch(x)"
-        result = evaluation_function(response, answer, params)
-        self.assertEqual(result["is_correct"], True)
-    with self.subTest(tag="sech"):
-        answer = "B/cosh(x)"
-        response = "Bsech(x)"
-        result = evaluation_function(response, answer, params)
-        self.assertEqual(result["is_correct"], True)
-    with self.subTest(tag="asinh"):
-        answer = "B"
-        response = "Basinh(sinh(1))"
-        result = evaluation_function(response, answer, params)
-        self.assertEqual(result["is_correct"], True)
-    with self.subTest(tag="acosh"):
-        answer = "B"
-        response = "Bacosh(cosh(1))"
-        result = evaluation_function(response, answer, params)
-        self.assertEqual(result["is_correct"], True)
-    with self.subTest(tag="atanh"):
-        answer = "B"
-        response = "Batanh(tanh(1))"
-        result = evaluation_function(response, answer, params)
-        self.assertEqual(result["is_correct"], True)
-    with self.subTest(tag="asech"):
-        answer = "B"
-        response = "Bsech(asech(1))"
-        result = evaluation_function(response, answer, params)
-        self.assertEqual(result["is_correct"], True)
-    with self.subTest(tag="exp"):
-        answer = "B*exp(2*x)"
-        response = "Bexp(x)*exp(x)"
-        result = evaluation_function(response, answer, params)
-        self.assertEqual(result["is_correct"], True)
-    with self.subTest(tag="log"):
-        answer = "10B"
-        response = "Bexp(log(10))"
-        result = evaluation_function(response, answer, params)
-        self.assertEqual(result["is_correct"], True)
-    with self.subTest(tag="sqrt"):
-        answer = "2B"
-        response = "Bsqrt(4)"
-        result = evaluation_function(response, answer, params)
-        self.assertEqual(result["is_correct"], True)
-    with self.subTest(tag="sign"):
-        answer = "B"
-        response = "Bsign(1)"
-        result = evaluation_function(response, answer, params)
-        self.assertEqual(result["is_correct"], True)
-    with self.subTest(tag="Abs"):
-        answer = "2B"
-        response = "BAbs(-2)"
-        result = evaluation_function(response, answer, params)
-        self.assertEqual(result["is_correct"], True)
-    with self.subTest(tag="Max"):
-        answer = "B"
-        response = "BMax(0,1)"
-        result = evaluation_function(response, answer, params)
-        self.assertEqual(result["is_correct"], True)
-    with self.subTest(tag="Min"):
-        answer = "B"
-        response = "BMin(1,2)"
-        result = evaluation_function(response, answer, params)
-        self.assertEqual(result["is_correct"], True)
-    with self.subTest(tag="arg"):
-        answer = "0"
-        response = "Barg(1)"
-        result = evaluation_function(response, answer, params)
-        self.assertEqual(result["is_correct"], True)
-    with self.subTest(tag="ceiling"):
-        answer = "B"
-        response = "Bceiling(0.6)"
-        result = evaluation_function(response, answer, params)
-        self.assertEqual(result["is_correct"], True)
-    with self.subTest(tag="floor"):
-        answer = "0"
-        response = "Bfloor(0.6)"
-        result = evaluation_function(response, answer, params)
-        self.assertEqual(result["is_correct"], True)
+    def test_elementary_functions(self):
+        params = {"strict_syntax": False, "elementary_functions": True}
+        with self.subTest(tag="sin"):
+            answer = "0"
+            response = "Bsin(pi)"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+        with self.subTest(tag="sinc"):
+            answer = "B"
+            response = "Bsinc(0)"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+        with self.subTest(tag="csc"):
+            answer = "B"
+            response = "Bcsc(pi/2)"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+        with self.subTest(tag="cos"):
+            answer = "0"
+            response = "Bcos(pi/2)"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+        with self.subTest(tag="sec"):
+            answer = "B"
+            response = "Bsec(0)"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+        with self.subTest(tag="tan"):
+            answer = "B"
+            response = "Btan(pi/4)"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+        with self.subTest(tag="cot"):
+            answer = "B"
+            response = "Bcot(pi/4)"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+        with self.subTest(tag="asin"):
+            answer = "B*pi/2"
+            response = "Basin(1)"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+        with self.subTest(tag="acsc"):
+            answer = "B*pi/2"
+            response = "Bacsc(1)"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+        with self.subTest(tag="acos"):
+            answer = "0"
+            response = "Bacos(1)"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+        with self.subTest(tag="asec"):
+            answer = "0"
+            response = "Basec(1)"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+        with self.subTest(tag="atan"):
+            answer = "B*pi/4"
+            response = "Batan(1)"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+        with self.subTest(tag="acot"):
+            answer = "B*pi/4"
+            response = "Bacot(1)"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+        with self.subTest(tag="atan2"):
+            answer = "B*pi/4"
+            response = "Batan2(1,1)"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+        with self.subTest(tag="sinh"):
+            answer = "B*exp(x)"
+            response = "Bsinh(x)+Bcosh(x)"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+        with self.subTest(tag="cosh"):
+            answer = "B*cosh(-1)"
+            response = "Bcosh(1)"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+        with self.subTest(tag="tanh"):
+            answer = "B*tanh(2*x)"
+            response = "B*2*tanh(x)/(1+tanh(x)^2)"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+        with self.subTest(tag="csch"):
+            answer = "B/sinh(x)"
+            response = "Bcsch(x)"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+        with self.subTest(tag="sech"):
+            answer = "B/cosh(x)"
+            response = "Bsech(x)"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+        with self.subTest(tag="asinh"):
+            answer = "B"
+            response = "Basinh(sinh(1))"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+        with self.subTest(tag="acosh"):
+            answer = "B"
+            response = "Bacosh(cosh(1))"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+        with self.subTest(tag="atanh"):
+            answer = "B"
+            response = "Batanh(tanh(1))"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+        with self.subTest(tag="asech"):
+            answer = "B"
+            response = "Bsech(asech(1))"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+        with self.subTest(tag="exp"):
+            answer = "B*exp(2*x)"
+            response = "Bexp(x)*exp(x)"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+        with self.subTest(tag="log"):
+            answer = "10B"
+            response = "Bexp(log(10))"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+        with self.subTest(tag="sqrt"):
+            answer = "2B"
+            response = "Bsqrt(4)"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+        with self.subTest(tag="sign"):
+            answer = "B"
+            response = "Bsign(1)"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+        with self.subTest(tag="Abs"):
+            answer = "2B"
+            response = "BAbs(-2)"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+        with self.subTest(tag="Max"):
+            answer = "B"
+            response = "BMax(0,1)"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+        with self.subTest(tag="Min"):
+            answer = "B"
+            response = "BMin(1,2)"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+        with self.subTest(tag="arg"):
+            answer = "0"
+            response = "Barg(1)"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+        with self.subTest(tag="ceiling"):
+            answer = "B"
+            response = "Bceiling(0.6)"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+        with self.subTest(tag="floor"):
+            answer = "0"
+            response = "Bfloor(0.6)"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+        with self.subTest(tag="MECH50001_7.2"):
+            answer = "fs/(1-M*cos(theta))"
+            response = "fs/(1-Mcos(theta))"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
 
 if __name__ == "__main__":
     unittest.main()
