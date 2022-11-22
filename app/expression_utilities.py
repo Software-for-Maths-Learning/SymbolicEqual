@@ -118,7 +118,10 @@ def substitute(string, substitutions):
 
 from sympy.parsing.sympy_parser import parse_expr, split_symbols_custom, _token_splittable
 from sympy.parsing.sympy_parser import T as parser_transformations
-from sympy import Symbol
+from sympy import Symbol,\
+    sin, sinc, csc, cos, sec, tan, cot, asin, acsc, acos, asec, atan, acot, atan2,\
+    sinh, cosh, tanh, csch, sech, asinh, acosh, atanh, acsch, asech,\
+    exp, log, sqrt, sign, Abs, Max, Min, arg, ceiling, floor
 
 def create_sympy_parsing_params(params, unsplittable_symbols=tuple()):
     '''
@@ -130,6 +133,15 @@ def create_sympy_parsing_params(params, unsplittable_symbols=tuple()):
         parsing_params: A dictionary that contains necessary info for the
                         parse_expression function.
     '''
+
+    if "elementary_function" in params.keys():
+        elementary_functions = [\
+            sin, sinc, csc, cos, sec, tan, cot, asin, acsc, acos, asec, atan, acot, atan2,\
+            sinh, cosh, tanh, csch, sech, asinh, acosh, atanh, acsch, asech,\
+            exp, log,\
+            sqrt, sign, Abs, Max, Min, arg, ceiling, floor\
+        ]
+        params["input_symbols"].update({str(x):x for x in elementary_functions})
 
     if "input_symbols" in params.keys():
         to_keep = []

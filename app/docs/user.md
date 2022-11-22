@@ -14,6 +14,12 @@ There are seven optional parameters that can be set: `complexNumbers`, `specialF
 
 If you want to use `I` for the imaginary constant, set the grading parameter `complexNumbers` to True.
 
+## `elementary_functions`
+
+When using implicit multiplication function names with mulitple characters are sometimes split and not interpreted properly. Setting `elementary_functions` to True will reserve the function names listed below and prevent them from being split:
+
+`sin`, `sinc`, `csc`, `cos`, `sec`, `tan`, `cot`, `asin`, `acsc`, `acos`, `asec`, `atan`, `acot`, `atan2`,`sinh`, `cosh`, `tanh`, `csch`, `sech`, `asinh`, `acosh`, `atanh`, `acsch`, `asech`, `exp`, `log`, `sqrt`, `sign`, `Abs`, `Max`, `Min`, `arg`, `ceiling`, `floor`
+
 ## `specialFunctions`
 
 If you want to use the special functions `beta` (Euler Beta function), `gamma` (Gamma function) and `zeta` (Riemann Zeta function), set the grading parameter `specialFunctions` to True.
