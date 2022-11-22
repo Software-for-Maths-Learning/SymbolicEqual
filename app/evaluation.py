@@ -388,6 +388,19 @@ def check_equality(response, answer, params) -> dict:
 
     # Going from the simplest to complex tranformations available in sympy, check equality
     # https://github.com/sympy/sympy/wiki/Faq#why-does-sympy-say-that-two-equal-expressions-are-unequal
+
+    # General catch-all, placed first to improve performance
+    is_correct = bool((res - ans).simplify() == 0)
+    if is_correct:
+        if remark != "":
+            feedback = {"feedback": remark}
+        return {
+            "is_correct": True,
+            "level": "4",
+            **feedback,
+            **interp
+        }
+
     is_correct = bool(res.expand() == ans.expand())
     if is_correct:
         if remark != "":
@@ -418,18 +431,6 @@ def check_equality(response, answer, params) -> dict:
         return {
             "is_correct": True,
             "level": "3",
-            **feedback,
-            **interp
-        }
-
-    # General catch-all if above does not work
-    is_correct = bool((res - ans).simplify() == 0)
-    if is_correct:
-        if remark != "":
-            feedback = {"feedback": remark}
-        return {
-            "is_correct": True,
-            "level": "4",
             **feedback,
             **interp
         }
