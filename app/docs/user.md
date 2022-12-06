@@ -8,7 +8,7 @@ Note that this function is designed to handle comparisons of mathematical expres
 
 ### Optional grading parameters
 
-There are seven optional parameters that can be set: `complexNumbers`, `specialFunctions`, `strict_syntax`,  `symbol_assumptions`, `multiple_answers_criteria`, `plus_minus` and `minus_plus`.
+There are eight optional parameters that can be set: `complexNumbers`, `elementary_functions`, `specialFunctions`, `strict_syntax`,  `symbol_assumptions`, `multiple_answers_criteria`, `plus_minus` and `minus_plus`.
 
 ## `complexNumbers`
 
@@ -16,9 +16,9 @@ If you want to use `I` for the imaginary constant, set the grading parameter `co
 
 ## `elementary_functions`
 
-When using implicit multiplication function names with mulitple characters are sometimes split and not interpreted properly. Setting `elementary_functions` to True will reserve the function names listed below and prevent them from being split:
+When using implicit multiplication function names with mulitple characters are sometimes split and not interpreted properly. Setting `elementary_functions` to true will reserve the function names listed below and prevent them from being split. If a name is said to have one or more aliases this means that it will accept the alias names but the reserved name is what will be shown in the preview.
 
-`sin`, `sinc`, `csc`, `cos`, `sec`, `tan`, `cot`, `asin`, `acsc`, `acos`, `asec`, `atan`, `acot`, `atan2`,`sinh`, `cosh`, `tanh`, `csch`, `sech`, `asinh`, `acosh`, `atanh`, `acsch`, `asech`, `exp`, `log`, `sqrt`, `sign`, `Abs`, `Max`, `Min`, `arg`, `ceiling`, `floor`
+`sin`, `sinc`, `csc` (with alias `cosec`), `cos`, `sec`, `tan`, `cot` (with alias `cotan`), `asin` (with alias `arcsin`), `acsc` (with aliases `arccsc`, `arccosec`), `acos` (with alias `arccos`), `asec` (with alias `arcsec`), `atan` (with alias `arctan`), `acot` (with aliases `arccot`, `arccotan`), `atan2` (with alias `arctan2`), `sinh`, `cosh`, `tanh`, `csch` (with alias `cosech`), `sech`, `asinh` (with alias `arcsinh`), `acosh` (with alias `arccosh`), `atanh` (with alias `arctanh`), `acsch` (with aliases `arccsch`, `arcosech`), `asech` (with alias `arcsech`), `exp`, `log`, `sqrt`, `sign`, `Abs`  (with alias `abs`), `Max` (with alias `max`), `Min` (with alias `min`), `arg`, `ceiling`  (with alias `ceil`), `floor`
 
 ## `specialFunctions`
 
