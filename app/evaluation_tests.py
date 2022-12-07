@@ -661,6 +661,10 @@ class TestEvaluationFunction(unittest.TestCase):
             answer = "B*exp(2*x)"
             response = "Bexp(x)*exp(x)"
             self.assertEqual_elementary_function_aliases(answer,response,params,True)
+        with self.subTest(tag="exp2"):
+            answer = "a+b*exp(2)"
+            response = "a+b*E^2"
+            self.assertEqual_elementary_function_aliases(answer,response,params,True)
         with self.subTest(tag="log"):
             answer = "10B"
             response = "Bexp(log(10))"
