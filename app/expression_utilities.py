@@ -1,7 +1,7 @@
 elementary_functions_names = [
     ('sin',[]), ('sinc',[]), ('csc',['cosec']), ('cos',[]), ('sec',[]), ('tan',[]), ('cot',['cotan']), ('asin',['arcsin']), ('acsc',['arccsc','arccosec']), ('acos',['arccos']), ('asec',['arcsec']), ('atan',['arctan']), ('acot',['arccot','arccotan']), ('atan2',['arctan2']),\
     ('sinh',[]), ('cosh',[]), ('tanh',[]), ('csch',['cosech']), ('sech',[]), ('asinh',['arcsinh']), ('acosh',['arccosh']), ('atanh',['arctanh']), ('acsch',['arccsch','arccosech']), ('asech',['arcsech']),\
-    ('exp',[]), ('log',[]),\
+    ('exp',['Exp']), ('E',['e']),('log',[]),\
     ('sqrt',[]), ('sign',[]), ('Abs',['abs']), ('Max',['max']), ('Min',['min']), ('arg',[]), ('ceiling',['ceil']), ('floor',[])\
 ]
 elementary_functions_names.sort(key=lambda x: -len(x))
@@ -156,7 +156,11 @@ def create_sympy_parsing_params(params, unsplittable_symbols=tuple()):
         from sympy import I
     else:
         I = Symbol("I")
-    E = Symbol("E")
+    if params.get("elementary_functions", False) == True:
+        from sympy import E
+        e = E
+    else:
+        E = Symbol("E")
     N = Symbol("N")
     O = Symbol("O")
     Q = Symbol("Q")
@@ -192,7 +196,6 @@ def parse_expression(expr, parsing_params):
         to the parameters in parsing_params
     '''
 
-    
     strict_syntax = parsing_params.get("strict_syntax",False)
     extra_transformations = parsing_params.get("extra_transformations",())
     unsplittable_symbols = parsing_params.get("unsplittable_symbols",())
