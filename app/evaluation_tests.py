@@ -546,14 +546,22 @@ class TestEvaluationFunction(unittest.TestCase):
                 self.assertEqual(result["is_correct"], False)
 
     def assertEqual_elementary_function_aliases(self,answer,response,params,value):
+        with self.subTest(alias_tag="name"):
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], value)
+        names = []
         alias_substitutions = []
         for (name,alias) in elementary_functions_names:
-            alias_substitutions += [(name,name)] + [(x,name) for x in alias]
+            if name in answer or name in response:
+                names.append(name)
+                alias_substitutions += [(name,x) for x in alias]
         alias_substitutions.sort(key=lambda x: -len(x[0]))
-        answer = substitute(answer,alias_substitutions)
-        response = substitute(response,alias_substitutions)
-        result = evaluation_function(response, answer, params)
-        self.assertEqual(result["is_correct"], value)
+        for substitution in alias_substitutions:
+            with self.subTest(alias_tag=substitution):
+                subs_answer = substitute(answer,alias_substitutions)
+                subs_response = substitute(response,alias_substitutions)
+                result = evaluation_function(subs_response, subs_answer, params)
+                self.assertEqual(result["is_correct"], value)
 
     def test_elementary_functions(self):
         params = {"strict_syntax": False, "elementary_functions": True}
