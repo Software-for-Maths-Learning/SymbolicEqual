@@ -1,8 +1,11 @@
 # Base image that bundles AWS Lambda Python 3.8 image with some middleware functions
 # FROM base-eval-tmp
-FROM rabidsheep55/python-base-eval-layer
+#FROM rabidsheep55/python-base-eval-layer
+FROM base_evaluation_function_layer:latest
 
 WORKDIR /app
+
+RUN yum install -y git
 
 # Copy and install any packages/modules needed for your evaluation script.
 COPY requirements.txt .
@@ -11,6 +14,10 @@ RUN pip3 install -r requirements.txt
 # Copy the evaluation and testing scripts
 COPY evaluation.py ./app/
 COPY evaluation_tests.py ./app/
+
+# Copy the evaluation and testing scripts
+COPY preview.py ./app/
+COPY preview_tests.py ./app/
 
 # Copy additional files
 COPY expression_utilities.py ./app/
