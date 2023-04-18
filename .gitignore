@@ -8,3 +8,6 @@
 # Remove python caching
 __pycache__
 app/perf_test.py
+
+
+venv
