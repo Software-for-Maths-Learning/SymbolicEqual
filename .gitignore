@@ -11,3 +11,5 @@ app/perf_test.py
 
 
 venv
+*.wpr
+*.wpu

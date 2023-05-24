@@ -126,7 +126,78 @@ def substitute(string, substitutions):
 
 from sympy.parsing.sympy_parser import parse_expr, split_symbols_custom, _token_splittable
 from sympy.parsing.sympy_parser import T as parser_transformations
+from sympy.printing.latex import LatexPrinter
 from sympy import Symbol
+import re
+from typing import Dict, List, TypedDict
+
+class SymbolData(TypedDict):
+    latex: str
+    aliases: List[str]
+
+
+SymbolDict = Dict[str, SymbolData]
+
+symbol_latex_re = re.compile(
+    r"(?P<start>\\\(|\$\$|\$)(?P<latex>.*?)(?P<end>\\\)|\$\$|\$)"
+)
+
+def sympy_symbols(symbols):
+    """Create a mapping of local variables for parsing sympy expressions.
+
+    Args:
+        symbols (SymbolDict): A dictionary of sympy symbol strings to LaTeX
+        symbol strings.
+
+    Note:
+        Only the sympy string is used in this function.
+
+    Returns:
+        Dict[str, Symbol]: A dictionary of sympy symbol strings to sympy
+        Symbol objects.
+    """
+    return {k: Symbol(k) for k in symbols}
+
+def extract_latex(symbol):
+    """Returns the latex portion of a symbol string.
+
+    Note:
+        Only the first matched expression is returned.
+
+    Args:
+        symbol (str): The string to extract latex from.
+
+    Returns:
+        str: The latex string.
+    """
+    if (match := symbol_latex_re.search(symbol)) is None:
+        return symbol
+
+    return match.group("latex")
+
+def latex_symbols(symbols):
+    """Create a mapping between custom Symbol objects and LaTeX symbol strings.
+    Used when parsing a sympy Expression to a LaTeX string.
+
+    Args:
+        symbols (SymbolDict): A dictionary of sympy symbol strings to LaTeX
+        symbol strings.
+
+    Returns:
+        Dict[Symbol, str]: A dictionary of sympy Symbol objects to LaTeX
+        strings.
+    """
+    symbol_dict = {
+        Symbol(k): extract_latex(v["latex"])
+        for (k, v) in symbols.items()
+    }
+    return symbol_dict
+
+def sympy_to_latex(equation, symbols):
+    latex_out = LatexPrinter(
+        {"symbol_names": latex_symbols(symbols)}
+    ).doprint(equation)
+    return latex_out
 
 def create_sympy_parsing_params(params, unsplittable_symbols=tuple()):
     '''
@@ -179,6 +250,8 @@ def create_sympy_parsing_params(params, unsplittable_symbols=tuple()):
 
     for symbol in unsplittable_symbols:
         symbol_dict.update({symbol: Symbol(symbol)})
+
+    symbol_dict.update(sympy_symbols(params.get("symbols", {})))
 
     strict_syntax = params.get("strict_syntax",True)
 

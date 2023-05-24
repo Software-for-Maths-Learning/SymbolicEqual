@@ -17,6 +17,10 @@ COPY evaluation_tests.py ./app/
 # Copy additional files
 COPY expression_utilities.py ./app/
 
+# Copy the preview and testing scripts
+COPY preview.py ./app/
+COPY preview_tests.py ./app/
+
 # Copy Documentation
 COPY docs/dev.md ./app/docs/dev.md
 COPY docs/user.md ./app/docs/user.md
