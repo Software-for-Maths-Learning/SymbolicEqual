@@ -3,9 +3,9 @@ from sympy.parsing.sympy_parser import parse_expr, split_symbols_custom
 from sympy import Equality
 
 try:
-    from .expression_utilities import preprocess_expression, parse_expression, create_sympy_parsing_params, substitute
+    from .expression_utilities import preprocess_expression, parse_expression, create_sympy_parsing_params, substitute, sympy_symbols, sympy_to_latex
 except ImportError:
-    from expression_utilities import preprocess_expression, parse_expression, create_sympy_parsing_params, substitute
+    from expression_utilities import preprocess_expression, parse_expression, create_sympy_parsing_params, substitute, sympy_symbols, sympy_to_latex
 
 parse_error_warning = lambda x: f"`{x}` could not be parsed as a valid mathematical expression. Ensure that correct codes for input symbols are used, correct notation is used, that the expression is unambiguous and that all parentheses are closed."
 
@@ -29,7 +29,10 @@ def evaluation_function(response, answer, params) -> dict:
         response = response.replace(params["minus_plus"],"minus_plus")
 
     if ("plus_minus" not in response+answer) and ("minus_plus" not in response+answer):
-        return check_equality(response, answer, params)
+        result = check_equality(response, answer, params)
+        interp = result.get("response_latex", "")
+        interp_sympy = result.get("response_simplified", "")
+        return {"is_correct": result["is_correct"], "response_latex": interp, "response_simplified": interp_sympy, "feedback": result.get("feedback","")}
     else:
         response_set = set()
         if ("plus_minus" in response) or ("minus_plus" in response):
@@ -47,6 +50,7 @@ def evaluation_function(response, answer, params) -> dict:
         answer_list = list(answer_set)
         matches = { "responses": [False]*len(response_list), "answers": [False]*len(answer_list)}
         interp = ""
+        interp_sympy = ""
         for i, response in enumerate(response_list):
             result = None
             for j, answer in enumerate(answer_list):
@@ -56,8 +60,10 @@ def evaluation_function(response, answer, params) -> dict:
                     matches["answers"][j] = True
             if interp == "":
                 interp = result["response_latex"]
+                interp_sympy = result["response_simplified"]
             else:
                 interp += ", "+result["response_latex"]
+                interp_sympy += ", "+ result["response_simplified"]
         if params["multiple_answers_criteria"] == "all":
             is_correct = all(matches["responses"]) and all(matches["answers"])
         elif params["multiple_answers_criteria"] == "all_responses":
@@ -66,7 +72,7 @@ def evaluation_function(response, answer, params) -> dict:
             is_correct = all(matches["answers"])
         else:
             raise SyntaxWarning(f"Unknown multiple_answers_criteria: {params['multiple_answers_critera']}")
-        return {"is_correct": is_correct, "response_latex": interp}
+        return {"is_correct": is_correct, "response_latex": interp, "response_simplified": interp_sympy, "feedback": result.get("feedback","")}
 
 def RecpTrig(expr):
     """
@@ -310,8 +316,11 @@ def check_equality(response, answer, params) -> dict:
     except Exception as e:
         raise Exception("SymPy was unable to parse the answer."+remark,) from e
 
+    if params.get("simplify",False):
+        res = res.simplify()
+
     # Add how res was interpreted to the response
-    interp = {"response_latex": latex(res), "response_simplified": str(res)}
+    interp = {"response_latex": sympy_to_latex(res, params.get("symbols",{})), "response_simplified": str(res)}
 
     feedback = {}
 
