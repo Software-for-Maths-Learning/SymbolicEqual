@@ -1,10 +1,7 @@
 import unittest
 
-try:
-    from .preview import Params, extract_latex, preview_function
-except ImportError:
-    from preview import Params, extract_latex, preview_function
-
+from .preview import Params, extract_latex, preview_function
+from .evaluation_tests import elementary_function_test_cases
 
 class TestPreviewFunction(unittest.TestCase):
     """
@@ -67,7 +64,6 @@ class TestPreviewFunction(unittest.TestCase):
         self.assertIn("latex", preview)
         self.assertIn("sympy", preview)
 
-    @unittest.expectedFailure # Since we simply pass through to the evaluation function the result will always be simplified
     def test_doesnt_simplify_latex_by_default(self):
         response = "\\frac{x + x^2 + x}{x}"
         params = Params(is_latex=True)
@@ -76,7 +72,6 @@ class TestPreviewFunction(unittest.TestCase):
 
         self.assertEqual(preview.get("sympy"), "(x**2 + x + x)/x")
 
-    @unittest.expectedFailure # Since we simply pass through to the evaluation function the result will always be simplified
     def test_doesnt_simplify_sympy_by_default(self):
         response = "(x + x**2 + x)/x"
         params = Params(is_latex=False)
@@ -118,7 +113,6 @@ class TestPreviewFunction(unittest.TestCase):
             "+ \\cos{\\left(2 x \\right)}",
         )
 
-    @unittest.expectedFailure # Since we simply pass through to the evaluation function the result will always be simplified
     def test_latex_with_equality_symbol(self):
         response = "\\frac{x + x^2 + x}{x} = y"
 
@@ -130,7 +124,6 @@ class TestPreviewFunction(unittest.TestCase):
 
         self.assertEqual(preview.get("sympy"), "Eq((x**2 + x + x)/x, y)")
 
-    @unittest.expectedFailure # Since we simply pass through to the evaluation function the result will always be simplified
     def test_sympy_with_equality_symbol(self):
         response = "Eq((x + x**2 + x)/x, 1)"
         params = Params(is_latex=False, simplify=False)
@@ -254,6 +247,12 @@ class TestPreviewFunction(unittest.TestCase):
         self.assertEqual(extract_latex(dollars), " x ** 2 + 1 ")
         self.assertEqual(extract_latex(mixture), " x ** 2 - 1 ")
 
+    def test_elementary_functions_preview(self):
+        params = {"strict_syntax": False, "elementary_functions": True}
+        for case in elementary_function_test_cases:
+            response = case[1]
+            result = preview_function(response, params)
+            self.assertEqual(result["preview"]["latex"], case[3])
 
 if __name__ == "__main__":
     unittest.main()
