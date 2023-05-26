@@ -254,5 +254,22 @@ class TestPreviewFunction(unittest.TestCase):
             result = preview_function(response, params)
             self.assertEqual(result["preview"]["latex"], case[3])
 
+    def test_implicit_multiplication_convention_implicit_higher_precedence(self):
+        response = "1/ab"
+        latex = r"1 \cdot \frac{1}{a b}" # REMARK: Here it would be preferable to not have the '1 \cdot ' at the start
+        params = {"strict_syntax": False, "convention": "implicit_higher_precedence"}
+        result = preview_function(response, params)
+        self.assertEqual(result["preview"]["latex"], latex)
+
+    def test_implicit_multiplication_convention_equal_precedence(self):
+        latex = r"1 \cdot \frac{1}{a} b" # REMARK: Here it would be preferable to not have the '1 \cdot ' at the start
+        params = {"strict_syntax": False, "convention": "equal_precedence"}
+        response_a = "1/ab"
+        result_a = preview_function(response_a, params)
+        self.assertEqual(result_a["preview"]["latex"], latex)
+        response_b = "1/a*b"
+        result_b = preview_function(response_b, params)
+        self.assertEqual(result_b["preview"]["latex"], latex)
+
 if __name__ == "__main__":
     unittest.main()

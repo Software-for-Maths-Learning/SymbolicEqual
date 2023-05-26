@@ -663,6 +663,18 @@ class TestEvaluationFunction():
         result = evaluation_function(response, answer, params)
         assert result["is_correct"] is True
 
+    @pytest.mark.parametrize(
+        "res,ans,convention",
+        [
+            ("1/ab", "1/(ab)", "implicit_higher_precedence"),
+            ("1/ab", "1/a*b", "equal_precedence"),
+            ("1/ab", "(1/a)*b", "equal_precedence"),
+        ]
+    )
+    def test_implicit_multiplication_convention(self, res, ans, convention):
+        params = {"strict_syntax": False, "convention": convention}
+        result = evaluation_function(res, ans, params)
+        assert result["is_correct"] is True
 
 if __name__ == "__main__":
     pytest.main(['-xsk not slow', "--tb=line", os.path.abspath(__file__)])
