@@ -53,14 +53,20 @@ class TestEvaluationFunction(unittest.TestCase):
     def test_simple_polynomial_with_input_symbols_correct(self):
         response = "3*longName**2 + 3*longName + 5"
         answer = "2+3+longName+2*longName + 3*longName * longName"
-        params = {"strict_syntax": False, "input_symbols": [["longName",[]]]}
+        params = {"strict_syntax": False, "input_symbols": [{"code": "longName", "aliases": [], "symbol": "\\(\\mathrm\{longName\}\\)"}]}
 
         self.assertEqual_input_variations(response, answer, params, True)
 
     def test_simple_polynomial_with_input_symbols_implicit_correct(self):
         response = "abcxyz"
         answer = "abc*xyz"
-        params = {"strict_syntax": False, "input_symbols": [["abc",[]],["xyz",[]]]}
+        params = {
+            "strict_syntax": False, 
+            "input_symbols": [
+                {"code": "abc", "aliases": [], "symbol": "\\(abc\\)"},
+                {"code": "xyz", "aliases": [], "symbol": "\\(xyz\\)"}
+            ]
+        }
         result = evaluation_function(response, answer, params)
         self.assertEqual(result["is_correct"],True)
 
@@ -246,6 +252,7 @@ class TestEvaluationFunction(unittest.TestCase):
         response = "-minus_plus x**2 - plus_minus y**2"
         answer = "plus_minus x**2 + minus_plus y**2"
         params = {"strict_syntax": False}
+        params = {"strict_syntax": False}
 
         self.assertEqual_input_variations(response, answer, params, True)
 
@@ -340,9 +347,15 @@ class TestEvaluationFunction(unittest.TestCase):
     def test_empty_input_symbols_codes_and_alternatives(self):
         answer = '(1+(gamma-1)/2)((-1)/(gamma-1))'
         response = '(1+(gamma-1)/2)((-1)/(gamma-1))'
-        params = {'strict_syntax': False,
-                   'input_symbols': [['gamma', ['']], ['', ['A']], [' ', ['B']], ['C', ['  ']]]
-                 }
+        params = {
+            'strict_syntax': False,
+            'input_symbols': [
+                {'code': 'gamma', 'aliases': [''], 'symbol': '\\(\\gamma\\)'},
+                {'code': '', 'aliases': ['A'], 'symbol': '\\(A\\)'},
+                {'code': ' ', 'aliases': ['B'], 'symbol': '\\(B\\)'},
+                {'code': 'C', 'aliases': ['  '], 'symbol': '\\(C\\)'}
+            ]
+        }
         result = evaluation_function(response, answer, params)
         self.assertEqual(result["is_correct"], True)
 
@@ -475,13 +488,17 @@ class TestEvaluationFunction(unittest.TestCase):
             )
 
     def test_slow_response(self):
-        params = {"strict_syntax": False,
-                  "input_symbols": [["fx",["f","f_x","fofx"]],\
-                                    ["C",["c","k","K"]],\
-                                    ["A",["a"]],\
-                                    ["B",["b"]],\
-                                    ["x",["X"]],\
-                                    ["y",["Y"]]]}
+        params = {
+            "strict_syntax": False,
+            "input_symbols": [
+                {"code": "fx", "aliases": ["f","f_x","fofx"], "symbol": "\\(f(x)\\)"},
+                {"code": "C", "aliases": ["c","k","K"], "symbol": "\\(C\\)"},
+                {"code": "A", "aliases": ["a"], "symbol": "\\(A\\)"},
+                {"code": "B", "aliases": ["b"], "symbol": "\\(B\\)"},
+                {"code": "x", "aliases": ["X"], "symbol": "\\(x\\)"},
+                {"code": "y", "aliases": ["Y"], "symbol": "\\(y\\)"},
+            ]
+        }
         with self.subTest(tag="With `fx` in response"):
             answer = "-A*exp(x/b)*sin(y/b)+fx+C"
             response = "-A*exp(x/b)*sin(y/b)+fx+C"
@@ -503,9 +520,13 @@ class TestEvaluationFunction(unittest.TestCase):
     def test_pi_with_rtol(self):
         answer = "pi"
         response = "3.14"
-        params = {"strict_syntax": False,
-                  "rtol": 0.05,
-                  "input_symbols": [["pi",["Pi","PI","π"]]]}
+        params = {
+            "strict_syntax": False,
+            "rtol": 0.05,
+            "input_symbols": [
+                {"code": "pi", "aliases": ["Pi","PI","π"], "symbol": "\\(\pi\\)"},
+            ]
+        }
         result = evaluation_function(response, answer, params)
         self.assertEqual(result["is_correct"], True)
 
@@ -705,6 +726,54 @@ class TestEvaluationFunction(unittest.TestCase):
             answer = "fs/(1-M*cos(theta))"
             response = "fs/(1-Mcos(theta))"
             self.assertEqual_elementary_function_aliases(answer,response,params,True)
+
+    def test_MECH50010_1_3_a(self):
+        params = {
+            "strict_syntax": False,
+            "input_symbols": [
+                {
+                    "symbol": "\\(U\\)",
+                    "code": "U",
+                    "aliases": ["u", "V", "v"],
+                },
+                {
+                    "symbol": "\\(R\\)",
+                    "code": "R",
+                    "aliases": ["r"],
+                },
+                {
+                    "symbol": "\\(\\rho\\)",
+                    "code": "rho",
+                    "aliases": ["Rho", "RHO"],
+                },
+                {
+                    "symbol": "\\(\\pi\\)",
+                    "code": "pi",
+                    "aliases": ["Pi", "PI"],
+                },
+            ]
+        }
+        answer = "(pi/6)*(rho)*(U**2)*(R**2)"
+        with self.subTest(tag="Answer"):
+            response = "(pi/6)*(rho)*(U**2)*(R**2)"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+        with self.subTest(tag="Replace U with u"):
+            response = "(pi/6)*(rho)*(u**2)*(R**2)"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+        with self.subTest(tag="Replace R with r"):
+            response = "(pi/6)*(Rho)*(U**2)*(r**2)"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+        with self.subTest(tag="Replace rho with Rho"):
+            response = "(pi/6)*(rho)*(U**2)*(R**2)"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+        with self.subTest(tag="Replace pi with Pi"):
+            response = "(Pi/6)*(rho)*(U**2)*(R**2)"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
 
 if __name__ == "__main__":
     unittest.main()
