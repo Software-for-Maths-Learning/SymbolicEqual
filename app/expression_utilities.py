@@ -21,8 +21,8 @@ def preprocess_expression(exprs, params):
     if isinstance(exprs,str):
         exprs = [exprs]
 
-    if "input_symbols" in params.keys():
-        input_symbols = params["input_symbols"]
+    if "symbols" in params.keys():
+        input_symbols = params["symbols"]
         input_symbols_to_remove = []
         alternatives_to_remove = []
         for k in range(0,len(input_symbols)):
@@ -45,7 +45,7 @@ def preprocess_expression(exprs, params):
         for k in input_symbols_to_remove:
             del input_symbols[k]
         substitutions = []
-        for input_symbol in params["input_symbols"]:
+        for input_symbol in params["symbols"]:
             substitutions.append((input_symbol["code"],input_symbol["code"]))
             for alternative in input_symbol["aliases"]:
                 if len(alternative) > 0:
@@ -214,9 +214,9 @@ def create_sympy_parsing_params(params, unsplittable_symbols=tuple()):
                         parse_expression function.
     '''
 
-    if "input_symbols" in params.keys():
+    if "symbols" in params.keys():
         to_keep = []
-        for symbol in [x["code"] for x in params["input_symbols"]]:
+        for symbol in [x["code"] for x in params["symbols"]]:
             if len(symbol) > 1:
                 to_keep.append(symbol)
         unsplittable_symbols += tuple(to_keep)

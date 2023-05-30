@@ -53,7 +53,7 @@ class TestEvaluationFunction(unittest.TestCase):
     def test_simple_polynomial_with_input_symbols_correct(self):
         response = "3*longName**2 + 3*longName + 5"
         answer = "2+3+longName+2*longName + 3*longName * longName"
-        params = {"strict_syntax": False, "input_symbols": [{"code": "longName", "aliases": [], "symbol": "\\(\\mathrm\{longName\}\\)"}]}
+        params = {"strict_syntax": False, "symbols": [{"code": "longName", "aliases": [], "symbol": "\\(\\mathrm\{longName\}\\)"}]}
 
         self.assertEqual_input_variations(response, answer, params, True)
 
@@ -62,7 +62,7 @@ class TestEvaluationFunction(unittest.TestCase):
         answer = "abc*xyz"
         params = {
             "strict_syntax": False, 
-            "input_symbols": [
+            "symbols": [
                 {"code": "abc", "aliases": [], "symbol": "\\(abc\\)"},
                 {"code": "xyz", "aliases": [], "symbol": "\\(xyz\\)"}
             ]
@@ -349,7 +349,7 @@ class TestEvaluationFunction(unittest.TestCase):
         response = '(1+(gamma-1)/2)((-1)/(gamma-1))'
         params = {
             'strict_syntax': False,
-            'input_symbols': [
+            'symbols': [
                 {'code': 'gamma', 'aliases': [''], 'symbol': '\\(\\gamma\\)'},
                 {'code': '', 'aliases': ['A'], 'symbol': '\\(A\\)'},
                 {'code': ' ', 'aliases': ['B'], 'symbol': '\\(B\\)'},
@@ -490,7 +490,7 @@ class TestEvaluationFunction(unittest.TestCase):
     def test_slow_response(self):
         params = {
             "strict_syntax": False,
-            "input_symbols": [
+            "symbols": [
                 {"code": "fx", "aliases": ["f","f_x","fofx"], "symbol": "\\(f(x)\\)"},
                 {"code": "C", "aliases": ["c","k","K"], "symbol": "\\(C\\)"},
                 {"code": "A", "aliases": ["a"], "symbol": "\\(A\\)"},
@@ -523,7 +523,7 @@ class TestEvaluationFunction(unittest.TestCase):
         params = {
             "strict_syntax": False,
             "rtol": 0.05,
-            "input_symbols": [
+            "symbols": [
                 {"code": "pi", "aliases": ["Pi","PI","π"], "symbol": "\\(\pi\\)"},
             ]
         }
@@ -730,7 +730,7 @@ class TestEvaluationFunction(unittest.TestCase):
     def test_MECH50010_1_3_a(self):
         params = {
             "strict_syntax": False,
-            "input_symbols": [
+            "symbols": [
                 {
                     "symbol": "\\(U\\)",
                     "code": "U",
