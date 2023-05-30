@@ -53,7 +53,7 @@ class TestEvaluationFunction(unittest.TestCase):
     def test_simple_polynomial_with_input_symbols_correct(self):
         response = "3*longName**2 + 3*longName + 5"
         answer = "2+3+longName+2*longName + 3*longName * longName"
-        params = {"strict_syntax": False, "symbols": [{"code": "longName", "aliases": [], "symbol": "\\(\\mathrm\{longName\}\\)"}]}
+        params = {"strict_syntax": False, "symbols": {"longName": {"aliases": [], "latex": "\\(\\mathrm\{longName\}\\)"}}}
 
         self.assertEqual_input_variations(response, answer, params, True)
 
@@ -62,10 +62,10 @@ class TestEvaluationFunction(unittest.TestCase):
         answer = "abc*xyz"
         params = {
             "strict_syntax": False, 
-            "symbols": [
-                {"code": "abc", "aliases": [], "symbol": "\\(abc\\)"},
-                {"code": "xyz", "aliases": [], "symbol": "\\(xyz\\)"}
-            ]
+            "symbols": {
+                "abc": {"aliases": [], "latex": "\\(abc\\)"},
+                "xyz": {"aliases": [], "latex": "\\(xyz\\)"}
+            }
         }
         result = evaluation_function(response, answer, params)
         self.assertEqual(result["is_correct"],True)
@@ -349,12 +349,12 @@ class TestEvaluationFunction(unittest.TestCase):
         response = '(1+(gamma-1)/2)((-1)/(gamma-1))'
         params = {
             'strict_syntax': False,
-            'symbols': [
-                {'code': 'gamma', 'aliases': [''], 'symbol': '\\(\\gamma\\)'},
-                {'code': '', 'aliases': ['A'], 'symbol': '\\(A\\)'},
-                {'code': ' ', 'aliases': ['B'], 'symbol': '\\(B\\)'},
-                {'code': 'C', 'aliases': ['  '], 'symbol': '\\(C\\)'}
-            ]
+            'symbols': {
+                'gamma': {'aliases': [''], 'latex': '\\(\\gamma\\)'},
+                '': {'aliases': ['A'], 'latex': '\\(A\\)'},
+                ' ': {'aliases': ['B'], 'latex': '\\(B\\)'},
+                'C': {'aliases': ['  '], 'latex': '\\(C\\)'}
+            }
         }
         result = evaluation_function(response, answer, params)
         self.assertEqual(result["is_correct"], True)
@@ -490,14 +490,14 @@ class TestEvaluationFunction(unittest.TestCase):
     def test_slow_response(self):
         params = {
             "strict_syntax": False,
-            "symbols": [
-                {"code": "fx", "aliases": ["f","f_x","fofx"], "symbol": "\\(f(x)\\)"},
-                {"code": "C", "aliases": ["c","k","K"], "symbol": "\\(C\\)"},
-                {"code": "A", "aliases": ["a"], "symbol": "\\(A\\)"},
-                {"code": "B", "aliases": ["b"], "symbol": "\\(B\\)"},
-                {"code": "x", "aliases": ["X"], "symbol": "\\(x\\)"},
-                {"code": "y", "aliases": ["Y"], "symbol": "\\(y\\)"},
-            ]
+            "symbols": {
+                "fx": {"aliases": ["f","f_x","fofx"], "latex": "\\(f(x)\\)"},
+                "C": {"aliases": ["c","k","K"], "latex": "\\(C\\)"},
+                "A": {"aliases": ["a"], "latex": "\\(A\\)"},
+                "B": {"aliases": ["b"], "latex": "\\(B\\)"},
+                "x": {"aliases": ["X"], "latex": "\\(x\\)"},
+                "y": {"aliases": ["Y"], "latex": "\\(y\\)"},
+            }
         }
         with self.subTest(tag="With `fx` in response"):
             answer = "-A*exp(x/b)*sin(y/b)+fx+C"
@@ -523,9 +523,9 @@ class TestEvaluationFunction(unittest.TestCase):
         params = {
             "strict_syntax": False,
             "rtol": 0.05,
-            "symbols": [
-                {"code": "pi", "aliases": ["Pi","PI","π"], "symbol": "\\(\pi\\)"},
-            ]
+            "symbols": {
+                "pi": {"aliases": ["Pi","PI","π"], "latex": "\\(\pi\\)"},
+            }
         }
         result = evaluation_function(response, answer, params)
         self.assertEqual(result["is_correct"], True)
@@ -730,28 +730,24 @@ class TestEvaluationFunction(unittest.TestCase):
     def test_MECH50010_1_3_a(self):
         params = {
             "strict_syntax": False,
-            "symbols": [
-                {
-                    "symbol": "\\(U\\)",
-                    "code": "U",
+            "symbols": {
+                "U": {
+                    "latex": "\\(U\\)",
                     "aliases": ["u", "V", "v"],
                 },
-                {
-                    "symbol": "\\(R\\)",
-                    "code": "R",
+                "R": {
+                    "latex": "\\(R\\)",
                     "aliases": ["r"],
                 },
-                {
-                    "symbol": "\\(\\rho\\)",
-                    "code": "rho",
+                "rho": {
+                    "latex": "\\(\\rho\\)",
                     "aliases": ["Rho", "RHO"],
                 },
-                {
-                    "symbol": "\\(\\pi\\)",
-                    "code": "pi",
+                "pi": {
+                    "latex": "\\(\\pi\\)",
                     "aliases": ["Pi", "PI"],
                 },
-            ]
+            }
         }
         answer = "(pi/6)*(rho)*(U**2)*(R**2)"
         with self.subTest(tag="Answer"):

@@ -24,32 +24,30 @@ def preprocess_expression(exprs, params):
     if "symbols" in params.keys():
         input_symbols = params["symbols"]
         input_symbols_to_remove = []
-        alternatives_to_remove = []
-        for k in range(0,len(input_symbols)):
-            code = input_symbols[k]["code"]
+        aliases_to_remove = []
+        for (code, symbol_data) in input_symbols.items():
             if len(code) == 0:
-                input_symbols_to_remove += [k]
+                input_symbols_to_remove += [code]
             else:
-                code.strip()
-                if len(code) == 0:
-                    input_symbols_to_remove += [k]
+                if len(code.strip()) == 0:
+                    input_symbols_to_remove += [code]
                 else:
-                    aliases = input_symbols[k]["aliases"]
+                    aliases = symbol_data["aliases"]
                     for i in range(0,len(aliases)):
                         if len(aliases[i]) > 0:
                             aliases[i].strip()
                         if len(aliases[i]) == 0:
-                            alternatives_to_remove += [(k,i)]
-        for (k,i) in alternatives_to_remove:
-            del input_symbols[k]["aliases"][i]
-        for k in input_symbols_to_remove:
-            del input_symbols[k]
+                            aliases_to_remove += [(code,i)]
+        for (code,i) in aliases_to_remove:
+            del input_symbols[code]["aliases"][i]
+        for code in input_symbols_to_remove:
+            del input_symbols[code]
         substitutions = []
-        for input_symbol in params["symbols"]:
-            substitutions.append((input_symbol["code"],input_symbol["code"]))
-            for alternative in input_symbol["aliases"]:
-                if len(alternative) > 0:
-                    substitutions.append((alternative,input_symbol["code"]))
+        for (code, symbol_data) in input_symbols.items():
+            substitutions.append((code,code))
+            for alias in symbol_data["aliases"]:
+                if len(alias) > 0:
+                    substitutions.append((alias,code))
         substitutions.sort(key=lambda x: -len(x[0]))
 
         for k in range(0,len(exprs)):
@@ -216,7 +214,7 @@ def create_sympy_parsing_params(params, unsplittable_symbols=tuple()):
 
     if "symbols" in params.keys():
         to_keep = []
-        for symbol in [x["code"] for x in params["symbols"]]:
+        for symbol in params["symbols"].keys():
             if len(symbol) > 1:
                 to_keep.append(symbol)
         unsplittable_symbols += tuple(to_keep)
