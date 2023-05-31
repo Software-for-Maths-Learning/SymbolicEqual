@@ -359,6 +359,15 @@ class TestEvaluationFunction(unittest.TestCase):
         result = evaluation_function(response, answer, params)
         self.assertEqual(result["is_correct"], True)
 
+    def test_old_format_empty_input_symbols_codes_and_alternatives(self):
+        answer = '(1+(gamma-1)/2)((-1)/(gamma-1))'
+        response = '(1+(gamma-1)/2)((-1)/(gamma-1))'
+        params = {'strict_syntax': False,
+                   'input_symbols': [['gamma', ['']], ['', ['A']], [' ', ['B']], ['C', ['  ']]]
+                 }
+        result = evaluation_function(response, answer, params)
+        self.assertEqual(result["is_correct"], True)
+
     def test_numerical_comparison(self):
         params = {"numerical": True}
         with self.subTest(tag="Correct response, tolerance specified with atol"):
@@ -499,6 +508,32 @@ class TestEvaluationFunction(unittest.TestCase):
                 "y": {"aliases": ["Y"], "latex": "\\(y\\)"},
             }
         }
+        with self.subTest(tag="With `fx` in response"):
+            answer = "-A*exp(x/b)*sin(y/b)+fx+C"
+            response = "-A*exp(x/b)*sin(y/b)+fx+C"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+
+        with self.subTest(tag="Without `-` in response"):
+            answer = "-A*exp(x/b)*sin(y/b)+fx+C"
+            response = "A*exp(x/b)*sin(y/b)+fx+C"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], False)
+
+        with self.subTest(tag="With `f(x)` in response"):
+            answer = "A*exp(x/b)*sin(y/b)+f(x)+C"
+            response = "-A*exp(x/b)*sin(y/b)+f(x)+C"
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], False)
+
+    def test_slow_response_old_format_input_symbols(self):
+        params = {"strict_syntax": False,
+                  "input_symbols": [["fx",["f","f_x","fofx"]],\
+                                    ["C",["c","k","K"]],\
+                                    ["A",["a"]],\
+                                    ["B",["b"]],\
+                                    ["x",["X"]],\
+                                    ["y",["Y"]]]}
         with self.subTest(tag="With `fx` in response"):
             answer = "-A*exp(x/b)*sin(y/b)+fx+C"
             response = "-A*exp(x/b)*sin(y/b)+fx+C"
