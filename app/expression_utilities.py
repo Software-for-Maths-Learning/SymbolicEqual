@@ -44,7 +44,6 @@ def preprocess_expression(exprs, params):
             del input_symbols[code]["aliases"][i]
         for code in input_symbols_to_remove:
             del input_symbols[code]
-        substitutions = []
         for (code, symbol_data) in input_symbols.items():
             substitutions.append((code,code))
             for alias in symbol_data["aliases"]:
@@ -52,7 +51,7 @@ def preprocess_expression(exprs, params):
                     substitutions.append((alias,code))
 
     # REMARK: This is to ensure capability with response areas that use the old formatting
-    # for input_symbols. SHould be removed when all response areas are updated.
+    # for input_symbols. Should be removed when all response areas are updated.
     if "input_symbols" in params.keys():
         input_symbols = params["input_symbols"]
         input_symbols_to_remove = []
