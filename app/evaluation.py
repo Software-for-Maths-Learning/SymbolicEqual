@@ -1,11 +1,10 @@
 from sympy.parsing.sympy_parser import T as parser_transformations
-from sympy.parsing.sympy_parser import parse_expr, split_symbols_custom
 from sympy import Equality
 
 try:
-    from .expression_utilities import preprocess_expression, parse_expression, create_sympy_parsing_params, substitute, sympy_symbols, sympy_to_latex
+    from .expression_utilities import preprocess_expression, parse_expression, create_sympy_parsing_params, sympy_symbols, sympy_to_latex
 except ImportError:
-    from expression_utilities import preprocess_expression, parse_expression, create_sympy_parsing_params, substitute, sympy_symbols, sympy_to_latex
+    from expression_utilities import preprocess_expression, parse_expression, create_sympy_parsing_params, sympy_symbols, sympy_to_latex
 
 parse_error_warning = lambda x: f"`{x}` could not be parsed as a valid mathematical expression. Ensure that correct codes for input symbols are used, correct notation is used, that the expression is unambiguous and that all parentheses are closed."
 

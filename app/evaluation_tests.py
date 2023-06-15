@@ -344,7 +344,7 @@ class TestEvaluationFunction(unittest.TestCase):
         self.assertEqual(result["is_correct"], False)
         self.assertEqual(result["feedback"], "The response was an equality but was expected to be an expression.")
 
-    def test_empty_input_symbols_codes_and_alternatives(self):
+    def test_empty_input_symbols_codes_and_aliases(self):
         answer = '(1+(gamma-1)/2)((-1)/(gamma-1))'
         response = '(1+(gamma-1)/2)((-1)/(gamma-1))'
         params = {
