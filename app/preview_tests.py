@@ -1,12 +1,11 @@
-import unittest
+import os
+import pytest
 
-try:
-    from .preview import Params, extract_latex, preview_function
-except ImportError:
-    from preview import Params, extract_latex, preview_function
+from .preview import Params, extract_latex, preview_function
+from .evaluation_tests import elementary_function_test_cases
 
 
-class TestPreviewFunction(unittest.TestCase):
+class TestPreviewFunction():
     """
     TestCase Class used to test the algorithm.
     ---
@@ -29,137 +28,104 @@ class TestPreviewFunction(unittest.TestCase):
         response = ""
         params = Params(is_latex=True)
         result = preview_function(response, params)
-        self.assertIn("preview", result)
+        assert "preview" in result.keys()
 
         preview = result["preview"]
-        self.assertEqual(preview["latex"], "")
+        assert preview["latex"] == ""
 
     def test_empty_sympy_expression(self):
         response = ""
         params = Params(is_latex=False)
         result = preview_function(response, params)
-        self.assertIn("preview", result)
-        self.assertNotIn("error", result)
+        assert "preview" in result.keys()
 
         preview = result["preview"]
-        self.assertEqual(preview["sympy"], "")
+        assert preview["sympy"] == ""
 
     def test_latex_and_sympy_are_returned(self):
         response = "x+1"
         params = Params(is_latex=True)
         result = preview_function(response, params)
-        self.assertIn("preview", result)
-        self.assertNotIn("error", result)
+        assert "preview" in result.keys()
 
         preview = result["preview"]
-
-        self.assertIn("latex", preview)
-        self.assertIn("sympy", preview)
+        assert "latex" in preview.keys()
+        assert "sympy" in preview.keys()
 
         response = "x+1"
         params = Params(is_latex=False)
         result = preview_function(response, params)
-        self.assertIn("preview", result)
-        self.assertNotIn("error", result)
+        assert "preview" in result
 
         preview = result["preview"]
+        assert "latex" in preview
+        assert "sympy" in preview
 
-        self.assertIn("latex", preview)
-        self.assertIn("sympy", preview)
-
-    @unittest.expectedFailure # Since we simply pass through to the evaluation function the result will always be simplified
     def test_doesnt_simplify_latex_by_default(self):
         response = "\\frac{x + x^2 + x}{x}"
         params = Params(is_latex=True)
         result = preview_function(response, params)
         preview = result["preview"]
 
-        self.assertEqual(preview.get("sympy"), "(x**2 + x + x)/x")
+        assert preview.get("sympy") == "(x**2 + x + x)/x"
 
-    @unittest.expectedFailure # Since we simply pass through to the evaluation function the result will always be simplified
     def test_doesnt_simplify_sympy_by_default(self):
         response = "(x + x**2 + x)/x"
         params = Params(is_latex=False)
         result = preview_function(response, params)
-        self.assertNotIn("error", result)
         preview = result["preview"]
-
-        self.assertEqual(preview.get("latex"), "\\frac{x^{2} + x + x}{x}")
+        assert preview.get("latex") == "\\frac{x^{2} + x + x}{x}"
 
     def test_simplifies_latex_on_param(self):
         response = "\\frac{x + x^2 + x}{x}"
         params = Params(is_latex=True, simplify=True)
         result = preview_function(response, params)
-        self.assertNotIn("error", result)
         preview = result["preview"]
 
-        self.assertEqual(preview.get("sympy"), "x + 2")
+        assert preview.get("sympy") == "x + 2"
 
     def test_simplifies_sympy_on_param(self):
         response = "(x + x**2 + x)/x"
         params = Params(is_latex=False, simplify=True)
         result = preview_function(response, params)
-        self.assertNotIn("error", result)
         preview = result["preview"]
 
-        self.assertEqual(preview.get("latex"), "x + 2")
+        assert preview.get("latex") == "x + 2"
 
     def test_sympy_handles_implicit_multiplication(self):
         response = "sin(x) + cos(2x) - 3x**2"
         params = Params(is_latex=False, strict_syntax=False)
         result = preview_function(response, params)
-        self.assertNotIn("error", result)
-
         preview = result["preview"]
+        assert preview.get("latex") == "- 3 x^{2} + \\sin{\\left(x \\right)} + \\cos{\\left(2 x \\right)}"
 
-        self.assertEqual(
-            preview.get("latex"),
-            "- 3 x^{2} + \\sin{\\left(x \\right)} "
-            "+ \\cos{\\left(2 x \\right)}",
-        )
-
-    @unittest.expectedFailure # Since we simply pass through to the evaluation function the result will always be simplified
     def test_latex_with_equality_symbol(self):
         response = "\\frac{x + x^2 + x}{x} = y"
-
         params = Params(is_latex=True, simplify=False)
         result = preview_function(response, params)
-        self.assertNotIn("error", result)
-
         preview = result["preview"]
+        assert preview.get("sympy") == "Eq((x**2 + x + x)/x, y)"
 
-        self.assertEqual(preview.get("sympy"), "Eq((x**2 + x + x)/x, y)")
-
-    @unittest.expectedFailure # Since we simply pass through to the evaluation function the result will always be simplified
     def test_sympy_with_equality_symbol(self):
         response = "Eq((x + x**2 + x)/x, 1)"
         params = Params(is_latex=False, simplify=False)
         result = preview_function(response, params)
-        self.assertNotIn("error", result)
-
         preview = result["preview"]
-
-        self.assertEqual(preview.get("latex"), "\\frac{x^{2} + x + x}{x} = 1")
+        assert preview.get("latex") == "\\frac{x^{2} + x + x}{x} = 1"
 
     def test_latex_conversion_preserves_default_symbols(self):
         response = "\\mu + x + 1"
         params = Params(is_latex=True, simplify=False)
         result = preview_function(response, params)
-        self.assertNotIn("error", result)
-
         preview = result["preview"]
-
-        self.assertEqual(preview.get("sympy"), "mu + x + 1")
+        assert preview.get("sympy") in "mu + x + 1"
 
     def test_sympy_conversion_preserves_default_symbols(self):
         response = "mu + x + 1"
         params = Params(is_latex=False, simplify=False)
         result = preview_function(response, params)
-        self.assertNotIn("error", result)
-
         preview = result["preview"]
-
-        self.assertEqual(preview.get("latex"), "\\mu + x + 1")
+        assert preview.get("latex") == "\\mu + x + 1"
 
     def test_latex_conversion_preserves_optional_symbols(self):
         response = "m_{ \\text{table} } + \\text{hello}_\\text{world} - x + 1"
@@ -178,11 +144,8 @@ class TestPreviewFunction(unittest.TestCase):
             },
         )
         result = preview_function(response, params)
-        self.assertNotIn("error", result)
-
         preview = result["preview"]
-
-        self.assertEqual(preview.get("sympy"), "m_table + test - x + 1")
+        assert preview.get("sympy") == "m_table + test - x + 1"
 
     def test_sympy_conversion_preserves_optional_symbols(self):
         response = "m_table + test + x + 1"
@@ -198,14 +161,8 @@ class TestPreviewFunction(unittest.TestCase):
             },
         )
         result = preview_function(response, params)
-        self.assertNotIn("error", result)
-
         preview = result["preview"]
-
-        self.assertEqual(
-            preview.get("latex"),
-            "m_{\\text{table}} + \\text{hello}_\\text{world} + x + 1",
-        )
+        assert preview.get("latex") == "m_{\\text{table}} + \\text{hello}_\\text{world} + x + 1"
 
     def test_invalid_latex_returns_error(self):
         response = "\frac{ m_{ \\text{table} } + x + 1 }{x"
@@ -215,14 +172,14 @@ class TestPreviewFunction(unittest.TestCase):
             symbols={"m_table": {"latex": "m_{\\text{table}}", "aliases": []}},
         )
 
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             preview_function(response, params)
 
     def test_invalid_sympy_returns_error(self):
         response = "x + x***2 - 3 / x 4"
         params = Params(simplify=False, is_latex=False)
 
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             preview_function(response, params)
 
     def test_extract_latex_in_delimiters(self):
@@ -230,30 +187,54 @@ class TestPreviewFunction(unittest.TestCase):
         dollars = r"$ x ** 2 + 1 $"
         double_dollars = r"$$ \sin x + \tan x $$"
 
-        self.assertEqual(extract_latex(parentheses), " x + 1 ")
-        self.assertEqual(extract_latex(dollars), " x ** 2 + 1 ")
-        self.assertEqual(extract_latex(double_dollars), r" \sin x + \tan x ")
+        assert extract_latex(parentheses) == " x + 1 "
+        assert extract_latex(dollars) == " x ** 2 + 1 "
+        assert extract_latex(double_dollars) == r" \sin x + \tan x "
 
     def test_extract_latex_in_delimiters_and_text(self):
         parentheses = r"hello \( x + 1 \) world."
         dollars = r"hello $ x ** 2 + 1 $ world."
 
-        self.assertEqual(extract_latex(parentheses), " x + 1 ")
-        self.assertEqual(extract_latex(dollars), " x ** 2 + 1 ")
+        assert extract_latex(parentheses) == " x + 1 "
+        assert extract_latex(dollars) == " x ** 2 + 1 "
 
     def test_extract_latex_no_delimiters(self):
         test = r"'\sin x + \left ( \text{hello world} \right ) + \cos x"
-        self.assertEqual(extract_latex(test), test)
+        assert extract_latex(test) == test
 
     def test_extract_latex_multiple_expressions(self):
         parentheses = r"hello \( x + 1 \) world. \( \sin x + \cos x \) yes."
         dollars = r"hello $ x ** 2 + 1 $ world. \( \sigma \times \alpha \) no."
         mixture = r"hello $ x ** 2 - 1 $ world. $ \sigma \times \alpha $ !."
 
-        self.assertEqual(extract_latex(parentheses), " x + 1 ")
-        self.assertEqual(extract_latex(dollars), " x ** 2 + 1 ")
-        self.assertEqual(extract_latex(mixture), " x ** 2 - 1 ")
+        assert extract_latex(parentheses) == " x + 1 "
+        assert extract_latex(dollars) == " x ** 2 + 1 "
+        assert extract_latex(mixture) == " x ** 2 - 1 "
+
+    def test_elementary_functions_preview(self):
+        params = {"strict_syntax": False, "elementary_functions": True}
+        for case in elementary_function_test_cases:
+            response = case[1]
+            result = preview_function(response, params)
+            assert result["preview"]["latex"] == case[3]
+
+    def test_implicit_multiplication_convention_implicit_higher_precedence(self):
+        response = "1/ab"
+        latex = r"1 \cdot \frac{1}{a b}"  # REMARK: Here it would be preferable to not have the '1 \cdot ' at the start
+        params = {"strict_syntax": False, "convention": "implicit_higher_precedence"}
+        result = preview_function(response, params)
+        assert result["preview"]["latex"] == latex
+
+    def test_implicit_multiplication_convention_equal_precedence(self):
+        latex = r"1 \cdot \frac{1}{a} b"  # REMARK: Here it would be preferable to not have the '1 \cdot ' at the start
+        params = {"strict_syntax": False, "convention": "equal_precedence"}
+        response_a = "1/ab"
+        result_a = preview_function(response_a, params)
+        assert result_a["preview"]["latex"] == latex
+        response_b = "1/a*b"
+        result_b = preview_function(response_b, params)
+        assert result_b["preview"]["latex"] == latex
 
 
 if __name__ == "__main__":
-    unittest.main()
+    pytest.main(['-sk not slow', "--tb=line", os.path.abspath(__file__)])
