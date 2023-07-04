@@ -10,6 +10,7 @@ from .expression_utilities import (
 )
 from .evaluation_response_utilities import EvaluationResponse
 from .feedback.symbolic_equal import internal as symbolic_equal_internal_messages
+from .preview import preview_function
 
 
 def evaluation_function(response, answer, params, include_test_data=False) -> dict:
@@ -24,6 +25,13 @@ def evaluation_function(response, answer, params, include_test_data=False) -> di
     # actual symbolic comparison is done in check_equality
     if "multiple_answers_criteria" not in params.keys():
         params.update({"multiple_answers_criteria": "all"})
+
+    if params.get("is_latex",False):
+        try:
+            preview_result = preview_function(response, params)["preview"]["sympy"]
+        except Exception as e:
+            preview_result = response
+        response = preview_result
 
     response_list = create_expression_set(response, params)
     answer_list = create_expression_set(answer, params)

@@ -856,6 +856,15 @@ class TestEvaluationFunction():
         result = evaluation_function(res, ans, params)
         assert result["is_correct"] is True
 
+    def test_eval_function_can_handle_latex_input(self):
+        response = r"\sin x + x^{7}"
+        answer = "sin(x)+x**7"
+        params = {
+            "strict_syntax": False,
+            "is_latex": True
+        }
+        result = evaluation_function(response, answer, params)
+        assert result["is_correct"] is True
 
 if __name__ == "__main__":
     pytest.main(['-xsk not slow', "--tb=line", os.path.abspath(__file__)])
