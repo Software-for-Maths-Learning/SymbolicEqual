@@ -27,11 +27,7 @@ def evaluation_function(response, answer, params, include_test_data=False) -> di
         params.update({"multiple_answers_criteria": "all"})
 
     if params.get("is_latex",False):
-        try:
-            preview_result = preview_function(response, params)["preview"]["sympy"]
-        except Exception as e:
-            preview_result = response
-        response = preview_result
+        response = preview_function(response, params)["preview"]["sympy"]
 
     response_list = create_expression_set(response, params)
     answer_list = create_expression_set(answer, params)
