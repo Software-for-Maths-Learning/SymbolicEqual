@@ -870,5 +870,17 @@ class TestEvaluationFunction():
         result = evaluation_function(response, answer, params)
         assert result["is_correct"] is True
 
+    def test_replace_lambda(self):
+        params = {
+            "strict_syntax": False,
+            "elementary_functions": True,
+        }
+        # Since 'lambda' is a reserved keyword in python this case would
+        # cause a parsing error unless 'lambda' is replaced appropriately
+        response = "lambda"
+        answer = "lambda"
+        result = evaluation_function(response, answer, params)
+        assert result["is_correct"] is True
+
 if __name__ == "__main__":
     pytest.main(['-xsk not slow', "--tb=line", os.path.abspath(__file__)])
