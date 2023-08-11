@@ -1,8 +1,4 @@
-# -------- Imports for String Manipulation Utilities
-from sympy.parsing.sympy_parser import parse_expr, split_symbols_custom, _token_splittable
-from sympy.parsing.sympy_parser import T as parser_transformations
-from sympy import Basic, Symbol
-
+# -------- String Manipulation imports
 from .slr_parsing_utilities import (
     SLR_expression_parser,
     infix,
@@ -10,13 +6,15 @@ from .slr_parsing_utilities import (
     compose
 )
 
-# -------- Imports for (Sympy) Expression Parsing Utilities
+from .feedback.symbolic_equal import internal as symbolic_equal_internal_messages
+
+# (Sympy) Expression Parsing imports
+from sympy.parsing.sympy_parser import parse_expr, split_symbols_custom, _token_splittable
+from sympy.parsing.sympy_parser import T as parser_transformations
 from sympy.printing.latex import LatexPrinter
+from sympy import Basic, Symbol
 import re
 from typing import Dict, List, TypedDict
-
-# -------- Data for parsing, generating and comparing mathematical expressions and generating appropriate feedback
-from .feedback.symbolic_equal import internal as symbolic_equal_internal_messages
 
 elementary_functions_names = [
     ('sin', []), ('sinc', []), ('csc', ['cosec']), ('cos', []), ('sec', []), ('tan', []), ('cot', ['cotan']),
@@ -26,7 +24,9 @@ elementary_functions_names = [
     ('asinh', ['arcsinh']), ('acosh', ['arccosh']), ('atanh', ['arctanh']),
     ('acsch', ['arccsch', 'arccosech']), ('asech', ['arcsech']),
     ('exp', ['Exp']), ('E', ['e']), ('log', []),
-    ('sqrt', []), ('sign', []), ('Abs', ['abs']), ('Max', ['max']), ('Min', ['min']), ('arg', []), ('ceiling', ['ceil']), ('floor', [])
+    ('sqrt', []), ('sign', []), ('Abs', ['abs']), ('Max', ['max']), ('Min', ['min']), ('arg', []), ('ceiling', ['ceil']), ('floor', []),
+    # Below this line should probably not be collected with elementary functions. Some like 'common operations' would be a better name
+    ('summation', ['sum','Sum']), ('Derivative', ['diff']), 
 ]
 for data in elementary_functions_names:
     upper_case_alternatives = [data[0].upper()]
@@ -37,7 +37,8 @@ for data in elementary_functions_names:
 
 greek_letters = [
     "Alpha", "alpha", "Beta", "beta", "Gamma", "gamma", "Delta", "delta", "Epsilon", "epsilon", "Zeta", "zeta",
-    "Eta", "eta", "Theta", "theta", "Iota", "iota", "Kappa", "kappa", "Lambda", "lambda", "Mu", "mu", "Nu", "nu",
+    "Eta", "eta", "Theta", "theta", "Iota", "iota", "Kappa", "kappa", "Lambda", # "lambda" removed to avoid collision with reserved keyword in python
+    "Mu", "mu", "Nu", "nu",
     "Xi", "xi", "Omicron", "omicron", "Pi", "pi", "Rho", "rho", "Sigma", "sigma", "Tau", "tau", "Upsilon", "upsilon",
     "Phi", "phi", "Chi", "chi", "Psi", "psi", "Omega", "omega"
 ]
@@ -201,10 +202,12 @@ def substitute_input_symbols(exprs, params):
     if isinstance(exprs, str):
         exprs = [exprs]
 
-    substitutions = []
+    substitutions = [(expr, expr) for expr in params.get("reserved_keywords",[])]
+
+    input_symbols = params.get("symbols",dict())
 
     if "symbols" in params.keys():
-        input_symbols = params["symbols"]
+        # Removing invalid input symbols
         input_symbols_to_remove = []
         aliases_to_remove = []
         for (code, symbol_data) in input_symbols.items():
@@ -224,11 +227,21 @@ def substitute_input_symbols(exprs, params):
             del input_symbols[code]["aliases"][i]
         for code in input_symbols_to_remove:
             del input_symbols[code]
-        for (code, symbol_data) in input_symbols.items():
-            substitutions.append((code, code))
-            for alias in symbol_data["aliases"]:
-                if len(alias) > 0:
-                    substitutions.append((alias, code))
+
+    # Since 'lambda' is a reserved keyword in python
+    # it needs to be replaced with 'lamda' for expression
+    # parsing to work properly
+    lambda_value = input_symbols.pop("lambda", {"latex": r"\lambda", "aliases": ["lambda"]})
+    if lambda_value is not None:
+        lambda_value["aliases"].append("lambda")
+    input_symbols.update({"lamda": lambda_value})
+    params.update({"symbols": input_symbols})
+
+    for (code, symbol_data) in input_symbols.items():
+        substitutions.append((code, code))
+        for alias in symbol_data["aliases"]:
+            if len(alias) > 0:
+                substitutions.append((alias, code))
 
     # REMARK: This is to ensure capability with response areas that use the old formatting
     # for input_symbols. Should be removed when all response areas are updated.
@@ -265,13 +278,15 @@ def substitute_input_symbols(exprs, params):
     return exprs
 
 
-def find_matching_parenthesis(string, index):
+def find_matching_parenthesis(string, index, delimiters=None):
     depth = 0
+    if delimiters == None:
+        delimiters = ('(', ')')
     for k in range(index, len(string)):
-        if string[k] == '(':
+        if string[k] == delimiters[0]:
             depth += 1
             continue
-        if string[k] == ')':
+        if string[k] == delimiters[1]:
             depth += -1
             if depth == 0:
                 return k
@@ -287,9 +302,7 @@ def substitute(string, substitutions):
     Output:
         A string that is the input string where any occurence of the left element
         of each pair in substitutions have been replaced with the corresponding right element.
-        If the first element in the substitution is of the form (string,list of strings) then
-        the substitution will only happen if the first element is followed by one of the strings
-        in the list in the second element.
+        If the first element in the substitution is of the form (string,list of strings) then the substitution will only happen if the first element followed by one of the strings in the list in the second element.
     Remarks:
         Substitutions are made in the input order but if a substitutions left element is a
         substring of a preceding substitutions right element there will be no substitution.
@@ -447,7 +460,7 @@ def sympy_to_latex(equation, symbols):
     return latex_out
 
 
-def create_sympy_parsing_params(params, unsplittable_symbols=tuple()):
+def create_sympy_parsing_params(params, unsplittable_symbols=tuple(), symbol_assumptions=tuple()):
     '''
     Input:
         params               : evaluation function parameter dictionary
@@ -499,6 +512,8 @@ def create_sympy_parsing_params(params, unsplittable_symbols=tuple()):
     for symbol in unsplittable_symbols:
         symbol_dict.update({symbol: Symbol(symbol)})
 
+    symbol_dict.update(sympy_symbols(params.get("symbols", {})))
+
     strict_syntax = params.get("strict_syntax", True)
 
     parsing_params = {
@@ -511,23 +526,23 @@ def create_sympy_parsing_params(params, unsplittable_symbols=tuple()):
         "simplify": params.get("simplify", False)
     }
 
+    symbol_assumptions = list(symbol_assumptions)
     if "symbol_assumptions" in params.keys():
         symbol_assumptions_strings = params["symbol_assumptions"]
-        symbol_assumptions = []
         index = symbol_assumptions_strings.find("(")
         while index > -1:
             index_match = find_matching_parenthesis(symbol_assumptions_strings, index)
             try:
                 symbol_assumption = eval(symbol_assumptions_strings[index+1:index_match])
                 symbol_assumptions.append(symbol_assumption)
-            except (SyntaxError, TypeError) as exc:
-                raise Exception("List of symbol assumptions not written correctly.") from exc
+            except (SyntaxError, TypeError) as e:
+                raise Exception("List of symbol assumptions not written correctly.") from e
             index = symbol_assumptions_strings.find('(', index_match+1)
-        for sym, ass in symbol_assumptions:
-            try:
-                parsing_params["symbol_dict"].update({sym: eval("Symbol('"+sym+"',"+ass+"=True)")})
-            except Exception as exc:
-                raise Exception(f"Assumption {ass} for symbol {sym} caused a problem.") from exc
+    for sym, ass in symbol_assumptions:
+        try:
+            parsing_params["symbol_dict"].update({sym: eval("Symbol('"+sym+"',"+ass+"=True)")})
+        except Exception as e:
+            raise Exception(f"Assumption {ass} for symbol {sym} caused a problem.") from e
 
     return parsing_params
 
@@ -549,19 +564,19 @@ def parse_expression(expr, parsing_params):
     unsplittable_symbols = parsing_params.get("unsplittable_symbols", ())
     symbol_dict = parsing_params.get("symbol_dict", {})
     separate_unsplittable_symbols = [(x, " "+x+" ") for x in unsplittable_symbols]
+    # new approach
+    substitutions = separate_unsplittable_symbols
     if parsing_params["elementary_functions"] is True:
         alias_substitutions = []
         for (name, alias_list) in elementary_functions_names+special_symbols_names:
             if name in expr:
-                alias_substitutions += [(name, name)]
+                alias_substitutions += [(name, " "+name)]
             for alias in alias_list:
                 if alias in expr:
-                    alias_substitutions += [(alias, name)]
-        alias_substitutions.sort(key=lambda x: -len(x[0]))
-        expr = substitute(expr, alias_substitutions)
-        separate_unsplittable_symbols = [(x[0], " "+x[0]) for x in elementary_functions_names] + separate_unsplittable_symbols
-        separate_unsplittable_symbols.sort(key=lambda x: -len(x[0]))
-    expr = substitute(expr, separate_unsplittable_symbols)
+                    alias_substitutions += [(alias, " "+name)]
+        substitutions += alias_substitutions
+    substitutions.sort(key=lambda x: -len(x[0]))
+    expr = substitute(expr, substitutions)
     can_split = lambda x: False if x in unsplittable_symbols else _token_splittable(x)
     if strict_syntax:
         transformations = parser_transformations[0:4]+extra_transformations
