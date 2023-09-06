@@ -145,31 +145,48 @@ def check_equality(response, answer, params, eval_response) -> dict:
         eval_response.is_correct = ((res.args[0]-res.args[1])/(ans.args[0]-ans.args[1])).simplify().is_constant()
         return eval_response
 
-    error_below_atol = False
-    error_below_rtol = False
+    is_correct = bool((res - ans).simplify() == 0)
+    eval_response.is_correct = is_correct
 
-    if params.get("numerical", False) or params.get("rtol", False) or params.get("atol", False):
-        # REMARK: 'pi' should be a reserve symbols but is sometimes not treated as one, possibly because of input symbols
-        # The two lines below this comments fixes the issue but a more robust solution should be found for cases where there
-        # are other reserved symbols.
-        ans = ans.subs(Symbol('pi'), float(pi))
-        res = res.subs(Symbol('pi'), float(pi))
-        if res.is_constant() and ans.is_constant():
+    error_below_atol = None
+    error_below_rtol = None
+
+    if eval_response.is_correct is False:
+        if params.get("numerical", False) or params.get("rtol", False) or params.get("atol", False):
+            # REMARK: 'pi' should be a reserved symbol but it is sometimes not treated as one, possibly because of input symbols.
+            # The two lines below this comments fixes the issue but a more robust solution should be found for cases where there
+            # are other reserved symbols.
+            def replace_pi(expr):
+                pi_symbol = pi
+                for s in expr.free_symbols:
+                    if str(s) == 'pi':
+                        pi_symbol = s
+                return expr.subs(pi_symbol, float(pi))
+            ans = replace_pi(ans)
+            res = replace_pi(res)
             if "atol" in params.keys():
-                error_below_atol = bool(abs(float(ans-res)) < float(params["atol"]))
+                try:
+                    absolute_error = abs(float(ans-res))
+                    error_below_atol = bool(absolute_error < float(params["atol"]))
+                except TypeError:
+                    error_below_atol = None
             else:
                 error_below_atol = True
             if "rtol" in params.keys():
-                rtol = float(params["rtol"])
-                error_below_rtol = bool(float(abs(((ans-res)/ans).simplify())) < rtol)
+                try:
+                    relative_error = abs(float((ans-res)/ans))
+                    error_below_rtol = bool(relative_error < float(params["rtol"]))
+                except TypeError:
+                    error_below_rtol = None
             else:
                 error_below_rtol = True
-        if error_below_atol and error_below_rtol:
-            eval_response.is_correct = True
-            tag = "WITHIN_TOLERANCE"
-            eval_response.add_feedback((tag, symbolic_equal_internal_messages[tag]))
-            return eval_response
+            if error_below_atol is None or error_below_rtol is None:
+                eval_response.is_correct = False
+                tag = "NOT_NUMERICAL"
+                eval_response.add_feedback((tag, symbolic_equal_internal_messages[tag]))
+            elif error_below_atol is True and error_below_rtol is True:
+                eval_response.is_correct = True
+                tag = "WITHIN_TOLERANCE"
+                eval_response.add_feedback((tag, symbolic_equal_internal_messages[tag]))
 
-    is_correct = bool((res - ans).simplify() == 0)
-    eval_response.is_correct = is_correct
     return eval_response

@@ -548,13 +548,14 @@ class TestEvaluationFunction():
         assert result["is_correct"] is True
 
     @pytest.mark.parametrize(
-        "description,response,answer,tolerance,outcome",
+        "description,response,answer,tolerance,tags,outcome",
         [
             (
                 "Correct response, tolerance specified with atol",
                 "6.73",
                 "sqrt(3)+5",
                 {"atol": 0.005},
+                ["WITHIN_TOLERANCE"],
                 True
             ),
             (
@@ -562,6 +563,7 @@ class TestEvaluationFunction():
                 "6.7",
                 "sqrt(3)+5",
                 {"atol": 0.005},
+                [],
                 False
             ),
             (
@@ -569,6 +571,7 @@ class TestEvaluationFunction():
                 "6.73",
                 "sqrt(3)+5",
                 {"rtol": 0.0005},
+                ["WITHIN_TOLERANCE"],
                 True
             ),
             (
@@ -576,6 +579,7 @@ class TestEvaluationFunction():
                 "6.7",
                 "sqrt(3)+5",
                 {"rtol": 0.0005},
+                [],
                 False
             ),
             (
@@ -583,6 +587,7 @@ class TestEvaluationFunction():
                 "6.7+x",
                 "sqrt(3)+5",
                 {"atol": 0.005},
+                ["NOT_NUMERICAL"],
                 False
             ),
             (
@@ -590,6 +595,7 @@ class TestEvaluationFunction():
                 "6.73",
                 "sqrt(3)+x",
                 {"atol": 0.005},
+                ["NOT_NUMERICAL"],
                 False
             ),
             (
@@ -597,6 +603,7 @@ class TestEvaluationFunction():
                 "6.7+x",
                 "sqrt(3)+5",
                 {"rtol": 0.0005},
+                ["NOT_NUMERICAL"],
                 False
             ),
             (
@@ -604,15 +611,18 @@ class TestEvaluationFunction():
                 "6.73",
                 "sqrt(3)+x",
                 {"rtol": 0.0005},
+                ["NOT_NUMERICAL"],
                 False
             ),
         ]
     )
-    def test_numerical_comparison(self, description, response, answer, tolerance, outcome):
+    def test_numerical_comparison_problem(self, description, response, answer, tolerance, tags, outcome):
         params = {"numerical": True}
         params.update(tolerance)
-        result = evaluation_function(response, answer, params)
+        result = evaluation_function(response, answer, params, include_test_data=True)
         assert result["is_correct"] is outcome
+        for tag in tags:
+            tag in result["tags"]
 
     def test_warning_inappropriate_symbol(self):
         answer = 'factorial(2**4)'
