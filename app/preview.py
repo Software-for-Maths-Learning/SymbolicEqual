@@ -2,7 +2,6 @@ from typing import TypedDict
 
 import sympy
 from latex2sympy2 import latex2sympy
-from sympy.printing.latex import LatexPrinter
 from typing_extensions import NotRequired
 
 from sympy.parsing.sympy_parser import T as parser_transformations
@@ -16,6 +15,7 @@ from .expression_utilities import (
     substitute_input_symbols,
     SymbolDict,
     sympy_symbols,
+    sympy_to_latex,
 )
 
 from .feedback.symbolic_equal import internal as symbolic_equal_internal_messages
@@ -146,9 +146,7 @@ def preview_function(response: str, params: Params) -> Result:
         latex_out = []
         sympy_out = []
         for expression in expression_list:
-            latex_out.append(
-                LatexPrinter({"symbol_names": latex_symbols(symbols)}).doprint(expression)
-            )
+            latex_out.append(sympy_to_latex(expression, symbols))
             sympy_out.append(str(expression))
 
         if len(sympy_out) == 1:
