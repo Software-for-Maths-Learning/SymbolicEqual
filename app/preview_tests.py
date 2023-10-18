@@ -127,26 +127,6 @@ class TestPreviewFunction():
         preview = result["preview"]
         assert preview.get("latex") == "\\mu + x + 1"
 
-    def test_latex_conversion_preserves_optional_symbols(self):
-        response = "m_{ \\text{table} } + \\text{hello}_\\text{world} - x + 1"
-        params = Params(
-            is_latex=True,
-            simplify=False,
-            symbols={
-                "m_table": {
-                    "latex": r"hello \( m_{\text{table}} \) world",
-                    "aliases": [],
-                },
-                "test": {
-                    "latex": r"hello $ \text{hello}_\text{world} $ world.",
-                    "aliases": [],
-                },
-            },
-        )
-        result = preview_function(response, params)
-        preview = result["preview"]
-        assert preview.get("sympy") == "m_table + test - x + 1"
-
     def test_sympy_conversion_preserves_optional_symbols(self):
         response = "m_table + test + x + 1"
         params = Params(

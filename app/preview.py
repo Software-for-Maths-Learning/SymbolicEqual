@@ -36,6 +36,40 @@ class Preview(TypedDict):
 class Result(TypedDict):
     preview: Preview
 
+def find_matching_parenthesis(string, index, delimiters=None):
+    depth = 0
+    if delimiters == None:
+        delimiters = ('(', ')')
+    for k in range(index, len(string)):
+        if string[k] == delimiters[0]:
+            depth += 1
+            continue
+        if string[k] == delimiters[1]:
+            depth += -1
+            if depth == 0:
+                return k
+    return -1
+
+def sanitise_latex(response):
+    response = "".join(response.split())
+    response = response.replace('~',' ')
+    wrappers = [r"\mathrm",r"\text"]
+    for wrapper in wrappers:
+        processed_response = []
+        index = 0
+        while index < len(response):
+            wrapper_start = response.find(wrapper+"{", index)
+            if wrapper_start > -1:
+                processed_response.append(response[index:wrapper_start])
+                wrapper_end = find_matching_parenthesis(response, wrapper_start+1, delimiters=('{','}'))
+                inside_wrapper = response[(wrapper_start+len(wrapper+"{")):wrapper_end]
+                processed_response.append(inside_wrapper)
+                index = wrapper_end+1
+            else:
+                processed_response.append(response[index:])
+                index = len(response)
+        response = "".join(processed_response)
+    return response
 
 def parse_latex(response: str, symbols: SymbolDict) -> str:
     """Parse a LaTeX string to a sympy string while preserving custom symbols.
@@ -52,6 +86,8 @@ def parse_latex(response: str, symbols: SymbolDict) -> str:
         str: The expression in sympy syntax.
     """
     substitutions = {}
+
+    response = sanitise_latex(response)
 
     for sympy_symbol_str in symbols:
         symbol_str = symbols[sympy_symbol_str]["latex"]
@@ -77,7 +113,6 @@ def parse_latex(response: str, symbols: SymbolDict) -> str:
 
     except Exception as e:
         raise ValueError(str(e))
-
 
 def parse_symbolic(response: str, params):
     response_list_in = create_expression_set(response, params)
